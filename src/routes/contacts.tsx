@@ -1,11 +1,11 @@
 import { A } from "@solidjs/router";
 import { MainCentered } from "~/components/Main";
-import Header from "~/components/Header";
+import { MainHeader, MediumHeader } from "~/components/Header";
 
 export default function Contacts() {
   return (
     <MainCentered>
-      <Header string="Contacts Page"/>
+      <MainHeader string="Contacts Page"/>
     </MainCentered>
   );
 }

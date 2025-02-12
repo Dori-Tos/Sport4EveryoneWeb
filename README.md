@@ -1,32 +1,42 @@
-# SolidStart
+# Welcome to Sport4Everyone 👋
 
-Everything you need to build a Solid project, powered by [`solid-start`](https://start.solidjs.com);
+This is a website made with Solid : [`solid-start`](https://start.solidjs.com);
 
-## Creating a project
+## Using this app
 
-```bash
-# create a new project in the current directory
-npm init solid@latest
+### 1. Install dependencies
 
-# create a new project in my-app
-npm init solid@latest my-app
-```
+To install the necessary dependencies, run the following command:
 
-## Developing
+   ```bash
+   npm install
+   ```
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### 2. Start the app
 
-```bash
-npm run dev
+To start the website, run:
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+   ```bash
+   npx expo start
+   ```
 
-## Building
+## App Goals
 
-Solid apps are built with _presets_, which optimise your project for deployment to different environments.
+1. **Booking Sports Fields**
 
-By default, `npm run build` will generate a Node app that you can run with `npm start`. To use a different preset, add it to the `devDependencies` in `package.json` and specify in your `app.config.js`.
+   - The website allows users to book a chosen sports ground at their preferred time and date.
+   - Partner sports centers will have their databases updated with new reservations.
 
-## This project was created with the [Solid CLI](https://solid-cli.netlify.app)
+2. **Integrated Map**
+
+   - The map provides information such as current attendance, number of available fields, and friends on site.
+   - Additionally, it gives important information to users (e.g., opening hours, reservation prices).
+
+3. **User Contacts and Friends**
+
+   - The website aims to create thriving communities of players and facilitate last-minute bookings for close friends.
+   - Sports centers can host events and notify their regular users.
+
+4. **Sports Fields Management**
+
+    - The website will allow the admin user to manage his sports fields
