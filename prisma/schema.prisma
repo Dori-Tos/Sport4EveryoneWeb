@@ -34,6 +34,40 @@ model SportsCenter {
   reservations    Reservation[]
 }
 
+// model Sport {
+//   id              Int @id @default(autoincrement())
+//   name            String
+//   SportFieldSport SportFieldSport[]  // Junction table relation
+// }
+
+// model SportsField {
+//   id              Int @id @default(autoincrement())
+//   name            String
+//   sportsCenterId  Int
+//   sportsCenter    SportsCenter @relation(fields: [sportsCenterId], references: [id])
+//   sports          SportFieldSport[]  // Junction table relation
+//   reservations    Reservation[]
+// }
+
+// // Junction table for Sport and SportsField many-to-many relationship
+// model SportFieldSport {
+//   sport           Sport @relation(fields: [sportId], references: [id])
+//   sportId         Int
+//   sportsField     SportsField @relation(fields: [sportsFieldId], references: [id])
+//   sportsFieldId   Int
+//   @@id([sportId, sportsFieldId])
+// }
+
+// model SportsCenter {
+//   id              Int @id @default(autoincrement())
+//   name            String
+//   location        String
+//   attendance      Int
+//   sportsFields    SportsField[]
+//   reservations    Reservation[]
+// }
+
+
 model Reservation {
   id              Int @id @default(autoincrement())
   user            User @relation(fields: [userId], references: [id])

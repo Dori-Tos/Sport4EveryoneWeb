@@ -3,11 +3,6 @@ import { db } from './db'
 import { z } from 'zod'
 import { sportsFieldSchema } from './sportFields'
 
-export const getSportsCenters = query(async () => {
-    'use server'                              
-    return await db.sportsCenter.findMany()   
-}, 'getTasks')
-
 export const sportsCenterSchema = z.object({
     id: z.number().optional(),
     name: z.string(),
@@ -16,7 +11,12 @@ export const sportsCenterSchema = z.object({
     attendance: z.number(),
 })
 
-export const addSportsCenter = action(async (form: FormData) => {    // Action synchronizes the data
+export const getSportsCenters = query(async () => {
+    'use server'                              
+    return await db.sportsCenter.findMany()   
+}, 'getTasks')
+
+export const addSportsCenter = async (form: FormData) => {    // Action synchronizes the data
     'use server'
     const sportsCenter = sportsCenterSchema.parse({
         name: form.get('name'),
@@ -25,7 +25,9 @@ export const addSportsCenter = action(async (form: FormData) => {    // Action s
         attendance: Number(form.get('attendance')),
     })
     return await db.sportsCenter.create({ data: sportsCenter })
-})
+}
+
+export const addSportsCenterAction = action(addSportsCenter)
 
 export const removeSportCenter = action(async (id: number) => {
     'use server'
