@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Sport {
+  id              Int @id @default(autoincrement())
+  name            String
+  sportsField     SportsField[]
+}
+
+model SportsField {
+  id              Int @id @default(autoincrement())
+  name            String
+  sports          Sport[]
+  SportsCenter    SportsCenter @relation(fields: [sportsCenterId], references: [id])
+  sportsCenterId  Int
+  reservations    Reservation[]
+}
+
+model SportsCenter {
+  id              Int @id @default(autoincrement())
+  name            String
+  location        String
+  sportsFields    SportsField[]
+  attendance      Int
+  reservations    Reservation[]
+}
+
+model Reservation {
+  id              Int @id @default(autoincrement())
+  user            User @relation(fields: [userId], references: [id])
+  userId          Int
+  sportsCenter    SportsCenter @relation(fields: [sportsCenterId], references: [id])
+  sportsCenterId  Int
+  sportsField     SportsField @relation(fields: [sportsFieldId], references: [id])
+  sportsFieldId   Int
+  date            DateTime
+  duration        Int
+  price           Float 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model User {
+  id              Int @id @default(autoincrement())
+  email           String @unique
+  password        String
+  name            String
+  reservations    Reservation[]
+  contacts        Contact[] @relation("UserContacts")
+  contactOf       Contact[] @relation("UserContactsOf")
+}
+
+model Contact {
+  user            User @relation("UserContacts", fields: [userId], references: [id])
+  userId          Int
+  contact         User @relation("UserContactsOf", fields: [contactId], references: [id])
+  contactId       Int
+  @@id([userId, contactId])
+}
