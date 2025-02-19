@@ -8,6 +8,7 @@ export const getSports = query(async () => {
 }, 'getTasks')
 
 export const sportSchema = z.object({
+  id: z.number().optional(),
   name: z.string(),
 })
 

@@ -9,10 +9,11 @@ export const getSportsCenters = query(async () => {
 }, 'getTasks')
 
 export const sportsCenterSchema = z.object({
-  name: z.string(),
-  location: z.string(),
-  sportFields: z.array(sportsFieldSchema),
-  attendance: z.number(),
+    id: z.number().optional(),
+    name: z.string(),
+    location: z.string(),
+    sportFields: z.array(sportsFieldSchema),
+    attendance: z.number(),
 })
 
 export const addSportsCenter = action(async (form: FormData) => {    // Action synchronizes the data

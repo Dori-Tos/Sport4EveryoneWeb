@@ -1,5 +1,5 @@
 import type { APIEvent } from '@solidjs/start/server'
-import { addSportsCenter, getSportsCenters } from '~/lib/sportsCenter'
+import { addSportsCenter, getSportsCenters } from '~/lib/sportsCenters'
 
 export async function GET(event: APIEvent) {
   return await getSportsCenters()

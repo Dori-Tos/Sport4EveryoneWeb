@@ -9,7 +9,7 @@ import SportSelector from "~/components/SportSelector";
 import { UnderlinedLink } from "~/components/Link";
 import { addSport, getSports } from "~/lib/sports";
 import { addSportField, getSportFields } from "~/lib/sportFields";
-import { addSportsCenter, getSportsCenters } from "~/lib/sportsCenter";
+import { addSportsCenter, getSportsCenters } from "~/lib/sportsCenters";
 
 export const route = {
   preload() {
