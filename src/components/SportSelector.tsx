@@ -1,3 +1,5 @@
+import { For } from "solid-js";
+
 type SportSelectorProps = {
     data: Array<Record<string, any>>;
     selectedSport: string;
@@ -18,9 +20,11 @@ export default function SportSelector(props: SportSelectorProps) {
                     value={props.selectedSport}
                     onChange={(e) => props.setSelectedSport(e.currentTarget.value)}
                 >
-                    {props.data.map((item) => (
-                        <option value={item["Sport"]}>{item["Sport"]}</option>
-                    ))}
+                    <For each={props.data}>
+                        {(item) => (
+                            <option value={item.name}>{item.name}</option>
+                        )}
+                    </For>
                 </select>
             </div>
         </div>

@@ -10,19 +10,21 @@ export const sportSchema = z.object({
 export const getSports = query(async () => {
   'use server'                        // If the client made the request => we fetch from the server
   return await db.sport.findMany()    // If the server made the request => we get localy from the database
-}, 'getTasks')
+}, 'getSports')
 
 export const addSport = async (form: FormData) => {    // Action synchronizes the data
     'use server'
-    const sport = sportSchema.parse({
-        name: form.get('name'),
+    const sportData = sportSchema.parse({
+      name: form.get('name'),
   })
-  return await db.sport.create({ data: sport })
+  return await db.sport.create({ data: sportData })
 }
 
 export const addSportAction = action(addSport)
 
-export const removeSport = action(async (id: number) => {
+export const removeSport = async (id: number) => {
     'use server'
     return await db.sport.delete({ where: { id } })
-  })
+  }
+
+export const removeSportAction = action(removeSport)

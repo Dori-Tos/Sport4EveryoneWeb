@@ -1,35 +1,54 @@
 import { query, action } from '@solidjs/router'
 import { db } from './db'
 import { z } from 'zod'
-import { sportsFieldSchema } from './sportFields'
+import SportFields from '~/routes/sportFields'
 
 export const sportsCenterSchema = z.object({
-    id: z.number().optional(),
     name: z.string(),
     location: z.string(),
-    sportFields: z.array(sportsFieldSchema),
-    attendance: z.number(),
+    attendance: z.coerce.number(),
+    openingTime: z.string(),
+    sportFields: z.array(z.coerce.number()),
 })
 
 export const getSportsCenters = query(async () => {
     'use server'                              
-    return await db.sportsCenter.findMany()   
-}, 'getTasks')
+    return await db.sportsCenter.findMany({
+        include: {
+            sportFields: {
+                select: { id: true },
+            },
+        }
+    })  
+}, 'getSportsCenters')
 
 export const addSportsCenter = async (form: FormData) => {    // Action synchronizes the data
     'use server'
-    const sportsCenter = sportsCenterSchema.parse({
+    const sportsCenterData = sportsCenterSchema.parse({
         name: form.get('name'),
         location: form.get('location'),
-        sports: JSON.parse(form.get('sportFields') as string),
-        attendance: Number(form.get('attendance')),
+        attendance: form.get('attendance'),
+        openingTime: form.get('openingTime'),
+        sportFields: form.getAll("sportFields"),
     })
-    return await db.sportsCenter.create({ data: sportsCenter })
+    return await db.sportsCenter.create({ 
+        data: {
+            name: sportsCenterData.name,
+            location: sportsCenterData.location,
+            attendance: sportsCenterData.attendance,
+            openingTime: sportsCenterData.openingTime,
+            sportFields: {
+                connect: sportsCenterData.sportFields.map((id) => ({ id }))
+            },
+        } 
+    })
 }
 
 export const addSportsCenterAction = action(addSportsCenter)
 
-export const removeSportCenter = action(async (id: number) => {
+export const removeSportCenter = async (id: number) => {
     'use server'
     return await db.sportsCenter.delete({ where: { id } })
-  })
+}
+
+export const removeSportCenterAction = action(removeSportCenter)
