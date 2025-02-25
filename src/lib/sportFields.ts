@@ -1,4 +1,4 @@
-import { query, action } from '@solidjs/router'
+import { query, action, A } from '@solidjs/router'
 import { db } from './db'
 import { z } from 'zod'
 
@@ -18,6 +18,14 @@ export const getSportFields = query(async () => {
         },
       })
 }, 'getSportFields')
+
+export const getSportFieldsBySportsCenter = query(async (sportsCenterId?: number) => {
+    'use server'
+    if (sportsCenterId === undefined) return [];
+    return await db.sportsField.findMany({
+        where: { sportsCenterId: sportsCenterId }
+    })
+}, 'sportFieldsBySportsCenter' )
 
 export const addSportField = async (form: FormData) => {  
     'use server'

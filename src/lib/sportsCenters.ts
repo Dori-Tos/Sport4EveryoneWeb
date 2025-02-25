@@ -1,7 +1,6 @@
 import { query, action } from '@solidjs/router'
 import { db } from './db'
 import { z } from 'zod'
-import SportFields from '~/routes/sportFields'
 
 export const sportsCenterSchema = z.object({
     name: z.string(),
@@ -21,6 +20,23 @@ export const getSportsCenters = query(async () => {
         }
     })  
 }, 'getSportsCenters')
+
+export const getSportsCentersBySport = query(async (sportName: string) => {
+    'use server'
+    return await db.sportsCenter.findMany({
+      where: {
+        sportFields: {
+          some: {
+            sports: {
+              some: {
+                name: sportName
+              }
+            }
+          }
+        }
+      }
+    })
+}, 'sportsCenterBySport')
 
 export const addSportsCenter = async (form: FormData) => {    // Action synchronizes the data
     'use server'
