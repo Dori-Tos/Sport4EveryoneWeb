@@ -47,12 +47,12 @@ export const addSportField = async (form: FormData) => {
     })
 }
 
-export const addSportFieldAction = action(addSportField)
+export const addSportFieldAction = action(addSportField, 'addSportField')
 
 export const removeSportField = async (id: number) => {
     'use server'
     return await db.sportsField.delete({ where: { id } })
 }
 
-export const removeSportFieldAction = action(removeSportField)
+export const removeSportFieldAction = action(removeSportField, 'removeSportField')
 

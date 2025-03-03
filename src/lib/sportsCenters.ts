@@ -60,11 +60,11 @@ export const addSportsCenter = async (form: FormData) => {    // Action synchron
     })
 }
 
-export const addSportsCenterAction = action(addSportsCenter)
+export const addSportsCenterAction = action(addSportsCenter, 'addSportsCenter')
 
 export const removeSportCenter = async (id: number) => {
     'use server'
     return await db.sportsCenter.delete({ where: { id } })
 }
 
-export const removeSportCenterAction = action(removeSportCenter)
+export const removeSportCenterAction = action(removeSportCenter, 'removeSportCenter')

@@ -20,11 +20,11 @@ export const addSport = async (form: FormData) => {    // Action synchronizes th
   return await db.sport.create({ data: sportData })
 }
 
-export const addSportAction = action(addSport)
+export const addSportAction = action(addSport, 'addSport')
 
 export const removeSport = async (id: number) => {
     'use server'
     return await db.sport.delete({ where: { id } })
   }
 
-export const removeSportAction = action(removeSport)
+export const removeSportAction = action(removeSport, 'removeSport')
