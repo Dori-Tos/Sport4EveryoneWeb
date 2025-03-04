@@ -1,6 +1,6 @@
 # Welcome to Sport4Everyone 👋
 
-This is a website made with Solid : [`solid-start`](https://start.solidjs.com);
+This is a website made with Solid : [`solid-start`](https://start.solidjs.com)
 
 ## Using this app
 

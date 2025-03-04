@@ -1,9 +1,9 @@
-import { For, createSignal } from "solid-js";
-import { createAsyncStore } from "@solidjs/router";
-import { MainCentered } from "./Main";
-import { getSportFieldsBySportsCenter } from "~/lib/sportFields";
-import { PopupSportFields } from "./PopupSportFields";
-import { SportsCenterItem } from "~/components/Items";
+import { For, createSignal } from "solid-js"
+import { createAsyncStore } from "@solidjs/router"
+import { MainCentered } from "./Main"
+import { getSportFieldsBySportsCenter } from "~/lib/sportFields"
+import { PopupSportFields } from "./PopupSportFields"
+import { SportsCenterItem } from "~/components/Items"
 
 const SportTableColumn = [
   "Sports Center",
@@ -13,21 +13,21 @@ const SportTableColumn = [
 ]
 
 type SportTableProps = {
-  data: Array<SportsCenterItem>;
-};
+  data: Array<SportsCenterItem>
+}
 
 export default function SportTable(props: SportTableProps) {
-  const [selectedCenterId, setSelectedCenterId] = createSignal<number | undefined>(undefined);
-  const [selectedCenterName, setSelectedCenterName] = createSignal<string | undefined>(undefined);
+  const [selectedCenterId, setSelectedCenterId] = createSignal<number | undefined>(undefined)
+  const [selectedCenterName, setSelectedCenterName] = createSignal<string | undefined>(undefined)
 
   const sportFieldsData = createAsyncStore(async () => {
-    const sportFields = await getSportFieldsBySportsCenter(selectedCenterId());
+    const sportFields = await getSportFieldsBySportsCenter(selectedCenterId())
     return sportFields.map((sportField: any) => ({
       id: sportField.id,
       name: sportField.name,
       price: sportField.price,
-    }));
-  }, { initialValue: [] });
+    }))
+  }, { initialValue: [] })
 
   const handleSave = (reservation: any) => {
     console.log(reservation)
@@ -58,8 +58,8 @@ export default function SportTable(props: SportTableProps) {
                 {(row) => (
                   <tr class="border-t cursor-pointer hover:bg-gray-100" 
                   onClick={() => {
-                    setSelectedCenterId(row.id);
-                    setSelectedCenterName(row["Sports Center"]);
+                    setSelectedCenterId(row.id)
+                    setSelectedCenterName(row["Sports Center"])
                   }}>
                     <For each={SportTableColumn}>
                       {(column) => (
@@ -80,12 +80,12 @@ export default function SportTable(props: SportTableProps) {
           centerName={selectedCenterName()}
           centerId={selectedCenterId()}
           onClose={() => {
-            setSelectedCenterId(undefined);
-            setSelectedCenterName(undefined);
+            setSelectedCenterId(undefined)
+            setSelectedCenterName(undefined)
           }}
           onSave={handleSave}
         />
       )}
     </>
-  );
+  )
 }

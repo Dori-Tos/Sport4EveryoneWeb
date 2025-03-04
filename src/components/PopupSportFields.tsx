@@ -8,12 +8,12 @@ type PopupProps = {
   centerId: number | undefined
   onClose: () => void
   onSave: (reservation: ReservationItem) => void
-};
+}
 
 export function PopupSportFields(props: PopupProps) {
   const [selectedDate, setSelectedDate] = createSignal('2025-01-01')
-  const [startTime, setStartTime] = createSignal('10:00');
-  const [endTime, setEndTime] = createSignal('11:00');
+  const [startTime, setStartTime] = createSignal('10:00')
+  const [endTime, setEndTime] = createSignal('11:00')
   const [selectedCheckboxes, setSelectedCheckboxes] = createSignal<number[]>([])
 
   const handleCheckboxesChange = (id: number) => {
@@ -23,8 +23,8 @@ export function PopupSportFields(props: PopupProps) {
       } else {
         return [...prev, id]
       }
-    });
-  };
+    })
+  }
 
   const handleSave = () => {
     const reservation: ReservationItem = {

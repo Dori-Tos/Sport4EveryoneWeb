@@ -1,37 +1,37 @@
-import { A, createAsync, createAsyncStore, query, useSubmissions, type RouteDefinition } from "@solidjs/router";
-import { createSignal, createResource } from "solid-js";
-import { db } from "~/lib/db";
-import Counter from "~/components/Counter";
-import { MainCentered } from "~/components/Main";
-import { MainHeader, MediumHeader } from "~/components/Header";
-import { TableCentered } from "~/components/MainTable";
-import SportTable from "~/components/SportTable";
-import SportSelector from "~/components/SportSelector";
-import { UnderlinedLink } from "~/components/Link";
-import { addSport, getSports } from "~/lib/sports";
-import { addSportField, getSportFields } from "~/lib/sportFields";
-import { addSportsCenter, getSportsCenters, getSportsCentersBySport } from "~/lib/sportsCenters";
+import { A, createAsync, createAsyncStore, query, useSubmissions, type RouteDefinition } from "@solidjs/router"
+import { createSignal, createResource } from "solid-js"
+import { db } from "~/lib/db"
+import Counter from "~/components/Counter"
+import { MainCentered } from "~/components/Main"
+import { MainHeader, MediumHeader } from "~/components/Header"
+import { TableCentered } from "~/components/MainTable"
+import SportTable from "~/components/SportTable"
+import SportSelector from "~/components/SportSelector"
+import { UnderlinedLink } from "~/components/Link"
+import { addSport, getSports } from "~/lib/sports"
+import { addSportField, getSportFields } from "~/lib/sportFields"
+import { addSportsCenter, getSportsCenters, getSportsCentersBySport } from "~/lib/sportsCenters"
 
 export const route = {
   preload() {
-    getSports();
+    getSports()
   },
-} satisfies RouteDefinition;
+} satisfies RouteDefinition
 
 export default function Home() {
-  const [selectedSport, setSelectedSport] = createSignal("football");
+  const [selectedSport, setSelectedSport] = createSignal("football")
 
-  const sports = createAsyncStore(() => getSports(), { initialValue: [] });
+  const sports = createAsyncStore(() => getSports(), { initialValue: [] })
 
   const sportsTableData = createAsyncStore(async () => {
-    const centers = await getSportsCentersBySport(selectedSport());
+    const centers = await getSportsCentersBySport(selectedSport())
     return centers.map((center: any) => ({
       id: center.id,
       "Sports Center": center.name,
       "Location": center.location,
       "Opening Time": center.openingTime,
       "Attendance": center.attendance,
-    }));
+    }))
   }, { initialValue: [
     {
       id: "id-unavailable",
@@ -40,7 +40,7 @@ export default function Home() {
       "Opening Time": "Opening Time Unavailable",
       "Attendance": "Attendance Unavailable",
     }
-  ]});
+  ]})
   
   return (
     <MainCentered>
@@ -60,5 +60,5 @@ export default function Home() {
         <p>To Do</p>
       </TableCentered>
     </MainCentered>
-  );
+  )
 }

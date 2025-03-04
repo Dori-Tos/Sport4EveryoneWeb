@@ -1,8 +1,8 @@
-import { JSXElement } from "solid-js";
-import { MainCentered } from "./Main";
+import { JSXElement } from "solid-js"
+import { MainCentered } from "./Main"
 
 type TableProps = {
-    children: JSXElement;
+    children: JSXElement
 }
 
 export function TableCentered(props: TableProps) {
@@ -12,5 +12,5 @@ export function TableCentered(props: TableProps) {
                 {props.children}
             </div>
         </MainCentered>
-    );
+    )
 }

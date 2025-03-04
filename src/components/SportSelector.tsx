@@ -1,9 +1,9 @@
-import { For } from "solid-js";
+import { For } from "solid-js"
 
 type SportSelectorProps = {
-    data: Array<Record<string, any>>;
-    selectedSport: string;
-    setSelectedSport: (field: string) => void;
+    data: Array<Record<string, any>>
+    selectedSport: string
+    setSelectedSport: (field: string) => void
 }
 
 export default function SportSelector(props: SportSelectorProps) {
@@ -28,5 +28,5 @@ export default function SportSelector(props: SportSelectorProps) {
                 </select>
             </div>
         </div>
-    );
+    )
 }

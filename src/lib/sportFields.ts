@@ -21,7 +21,7 @@ export const getSportFields = query(async () => {
 
 export const getSportFieldsBySportsCenter = query(async (sportsCenterId?: number) => {
     'use server'
-    if (sportsCenterId === undefined) return [];
+    if (sportsCenterId === undefined) return []
     return await db.sportsField.findMany({
         where: { sportsCenterId: sportsCenterId }
     })

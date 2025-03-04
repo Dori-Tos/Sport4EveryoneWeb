@@ -1,7 +1,7 @@
-import { JSXElement } from "solid-js";
+import { JSXElement } from "solid-js"
 
 type MainProps = {
-    children: JSXElement;
+    children: JSXElement
 }
 
 export function MainCentered(props: MainProps) {
@@ -9,5 +9,5 @@ export function MainCentered(props: MainProps) {
         <main class="text-center mx-auto text-gray-700 p-4">
             {props.children}
         </main>
-    );
+    )
 }

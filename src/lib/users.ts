@@ -29,7 +29,7 @@ export const getUsers = query(async () => {
           },
           sportsCenters: true,
         },
-      });
+      })
     
       return users
 }, 'getUsers')
