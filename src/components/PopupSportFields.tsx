@@ -81,24 +81,31 @@ export function PopupSportFields(props: PopupProps) {
             />
         </div>
         {props.data.length > 0 ? (
-          <ul class="list-disc ml-6">
+          <div class="border border-gray-300 rounded-md p-2">
+          <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
+            <span class="w-1/12"></span>
+            <span class="w-7/12 font-semibold">SportField Name</span>
+            <span class="w-4/12 font-semibold">Price</span>
+          </div>
+          <ul>
             <For each={props.data}>
               {(field: SportFieldsItem) => (
                 <li class="mb-2">
-                  <div class="flex justify-between items-center">
+                  <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
                     <input
                       type="checkbox"
-                      class="mr-2"
+                      class="mr-2 w-1/12"
                       checked={selectedCheckboxes().includes(field.id)}
                       onChange={() => handleCheckboxesChange(field.id)}
                     />
-                    <span class="font-semibold">{field.name}</span>
-                    <span class="text-gray-600">{field.price}€/h</span>
+                    <span class="w-7/12 font-semibold">{field.name}</span>
+                    <span class="w-4/12 text-gray-600">{field.price}€/h</span>
                   </div>
                 </li>
               )}
             </For>
           </ul>
+        </div>
         ) : (
           <p>No sport fields available.</p>
         )}

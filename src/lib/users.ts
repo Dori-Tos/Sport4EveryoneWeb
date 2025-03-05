@@ -66,3 +66,24 @@ export const removeUser = async (id: number) => {
 }
 
 export const removeUserAction = action(removeUser, 'removeUser')
+
+export const updateUser = async (id: number, data: any) => {
+  'use server'
+  const userData = usersSchema.parse(data)
+  const updateData: any = {}
+
+  if (userData.name !== undefined) updateData.name = userData.name
+  if (userData.email !== undefined) updateData.email = userData.email
+  if (userData.password !== undefined) updateData.password = userData.password
+  if (userData.administrator !== undefined) updateData.administrator = userData.administrator
+  if (userData.reservations !== undefined) updateData.reservations = userData.reservations
+  if (userData.contacts !== undefined) updateData.contacts = userData.contacts
+  if (userData.sportsCenters !== undefined) updateData.sportsCenters = userData.sportsCenters
+
+  return await db.user.update({
+    where: { id },
+    data: updateData,
+  })
+}
+
+export const updateUserAction = action(updateUser, 'updateUser')

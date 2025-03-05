@@ -20,12 +20,14 @@ function NavLink(props: NavLinkProps) {
 export default function Nav() {
   return (
     <nav class="bg-sky-800">
-      <ul class="container flex items-center p-3 text-gray-200">
+      <ul class="flex items-center p-3 text-gray-200 w-full px-4">
         <NavLink href="/">Home</NavLink>
-        <NavLink href="/about">About</NavLink>
         <NavLink href="/map">Map</NavLink>
         <NavLink href="/contacts">Contacts</NavLink>
         <NavLink href="/sportFields">Sports Fields</NavLink>
+        <li class="ml-auto">
+          <NavLink href="/profile">Profile</NavLink>
+        </li>
       </ul>
     </nav>
   )
