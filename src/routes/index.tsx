@@ -1,7 +1,5 @@
 import { A, createAsync, createAsyncStore, query, useSubmissions, type RouteDefinition } from "@solidjs/router"
 import { createSignal, createResource } from "solid-js"
-import { db } from "~/lib/db"
-import Counter from "~/components/Counter"
 import { MainCentered } from "~/components/Main"
 import { MainHeader, MediumHeader } from "~/components/Header"
 import { TableCentered } from "~/components/MainTable"

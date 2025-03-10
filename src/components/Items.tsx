@@ -15,9 +15,36 @@ export type SportFieldsItem = {
 }
 
 export type ReservationItem = {
-  date: string
-  time: string
-  sportFieldIds: number[]
+  id: number
+  startDateTime: string
+  duration: string
+  price: number
+  sportFieldId: number
   sportCenterId: number
   userId: number
+}
+
+export type RealSportsCenterItem = {
+  id: number
+  name: string
+  location: string
+  attendance: number
+  openingTime: string
+  sportFields: SportFieldsItem[]
+}
+
+export type ContactItem = {
+  id: number
+  userId: number
+}
+
+export type UserItem = {
+  id: number
+  username: string
+  password: string
+  email: string
+  administator: boolean
+  reservations: ReservationItem[]
+  sportsCenters: RealSportsCenterItem[]
+  contacts: ContactItem[]
 }

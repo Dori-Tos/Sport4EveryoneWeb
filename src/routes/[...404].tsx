@@ -12,12 +12,9 @@ export default function NotFound() {
         to learn how to build Solid apps.
       </p>
       <p class="my-4">
+        Or return to 
         <A href="/" class="text-sky-600 hover:underline">
-          Home
-        </A>
-        {" - "}
-        <A href="/about" class="text-sky-600 hover:underline">
-          About Page
+          Home Page
         </A>
       </p>
     </main>

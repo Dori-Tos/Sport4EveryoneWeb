@@ -3,13 +3,13 @@ import { db } from './db'
 import { z } from 'zod'
 
 export const usersSchema = z.object({
-    name: z.string(),
-    email: z.string(),
-    password: z.string(),
-    administrator: z.boolean(),
-    reservations: z.array(z.coerce.number()),
-    contacts: z.array(z.coerce.number()),
-    sportsCenters: z.array(z.coerce.number()),
+  name: z.string(),
+  email: z.string(),
+  password: z.string(),
+  administrator: z.boolean(),
+  reservations: z.array(z.coerce.number()).optional().default([]),
+  contacts: z.array(z.coerce.number()).optional().default([]),
+  sportsCenters: z.array(z.coerce.number()).optional().default([]),
 })
 
 export const getUsers = query(async () => {
@@ -87,3 +87,22 @@ export const updateUser = async (id: number, data: any) => {
 }
 
 export const updateUserAction = action(updateUser, 'updateUser')
+
+// export const updateUser = async (id: number, data: any) => {
+//   'use server'
+//   try {
+//     // Only update basic user properties, not relationships
+//     return await db.user.update({
+//       where: { id },
+//       data: {
+//         name: data.name,
+//         email: data.email,
+//         password: data.password,
+//         administrator: data.administrator,
+//       },
+//     })
+//   } catch (error) {
+//     console.error("Update user error:", error)
+//     throw error
+//   }
+// }
