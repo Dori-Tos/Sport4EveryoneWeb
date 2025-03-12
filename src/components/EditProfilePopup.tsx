@@ -1,11 +1,13 @@
 import { createSignal, Show } from "solid-js"
 import { useAuth } from "~/lib/auth"
 import { updateUserAction } from "~/lib/users"
+import type { User } from "~/lib/users"
+import bcrypt from "bcryptjs"
 
 export default function EditProfilePopup({ onClose, onSave }) {
   const { currentUser, setCurrentUser } = useAuth()
-  const [name, setName] = createSignal(currentUser().name)
-  const [email, setEmail] = createSignal(currentUser().email)
+  const [name, setName] = createSignal(currentUser()?.name || "")
+  const [email, setEmail] = createSignal(currentUser()?.email || "")
   const [password, setPassword] = createSignal("")
   const [confirmPassword, setConfirmPassword] = createSignal("")
   const [error, setError] = createSignal("")
@@ -24,23 +26,24 @@ export default function EditProfilePopup({ onClose, onSave }) {
     try {
       setLoading(true)
       
-      // Only include the fields we're actually updating
-      const updateData = { 
+      // Prepare update data
+      const updateData: Partial<User> = { 
         name: name(), 
         email: email(),
-        password: password() || currentUser().password,
-        administrator: currentUser().administrator,
-        // // Include empty arrays for relationship fields since we're not modifying them
-        // reservations: [],
-        // contacts: [],
-        // sportsCenters: []
+        administrator: currentUser()?.administrator || false,
       }
       
-      // Call the updateUserAction with minimal parameters
-      const result = await updateUserAction(currentUser().id, updateData)
+      // Only hash and include password if it's being changed
+      if (password()) {
+        const hashedPassword = await bcrypt.hash(password(), 10)
+        updateData.password = hashedPassword
+      }
+      
+      // Call the updateUserAction with the user ID and update data
+      const result = await updateUserAction(currentUser()?.id, updateData)
       
       if (result) {
-        // Create an updated user object without modifying the original
+        // Create an updated user object for the local state
         const updatedUser = {
           ...currentUser(),
           name: name(),
@@ -50,7 +53,7 @@ export default function EditProfilePopup({ onClose, onSave }) {
         // Update the current user in the auth context
         setCurrentUser(updatedUser)
         
-        // Close the popup
+        // Close the popup and notify parent
         if (onSave) onSave()
       } else {
         setError("Failed to update profile. Please try again.")

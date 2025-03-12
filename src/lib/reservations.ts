@@ -11,6 +11,8 @@ export const reservationSchema = z.object({
     price: z.number(),
 })
 
+type Reservation = z.infer<typeof reservationSchema>
+
 export const getReservations = query(async () => {
     'use server'
     const reservations = await db.reservation.findMany({

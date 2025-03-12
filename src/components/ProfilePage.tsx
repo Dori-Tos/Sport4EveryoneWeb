@@ -1,17 +1,36 @@
-import { createSignal, Show, For } from "solid-js"
+import { createSignal, Show, For, createResource } from "solid-js"
 import { MainCentered } from "~/components/Main"
 import { MainHeader, MediumHeader } from "~/components/Header"
 import { TableCentered } from "~/components/MainTable"
 import { useAuth } from "~/lib/auth"
+import { getUser } from "~/lib/users"
 import EditProfilePopup from "~/components/EditProfilePopup"
 
 export default function ProfilePage() {
-  const { currentUser } = useAuth()
+  const { currentUser, setCurrentUser } = useAuth()
   const [showPopup, setShowPopup] = createSignal(false)
   
+  // Use createResource to fetch the latest user data from the server
+  const [userData, { refetch }] = createResource(getUser)
+  
+  // Update the current user when userData changes
+  const handleUserDataUpdate = () => {
+    if (userData() && !userData.loading) {
+      setCurrentUser(userData())
+    }
+  }
+  
+  // Monitor userData for changes
+  createEffect(() => {
+    if (userData()) {
+      handleUserDataUpdate()
+    }
+  })
+
   const handleSave = () => {
     setShowPopup(false)
-    // Optionally refresh user data if needed
+    // Refresh user data from the server
+    refetch()
   }
 
   return (
