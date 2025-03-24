@@ -9,7 +9,7 @@ export const usersSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string().optional(), // Make password optional for updates
-  administrator: z.boolean(),
+  administrator: z.coerce.boolean(),
   reservations: z.array(z.any()).optional(),
   contacts: z.array(z.any()).optional(),
   contactOf: z.array(z.any()).optional(),
@@ -21,6 +21,13 @@ export type User = z.infer<typeof usersSchema>
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
+})
+
+export const registerSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string(),
+  administrator: z.coerce.boolean().default(false),
 })
 
 export const getUsers = query(async () => {
@@ -87,14 +94,12 @@ export const getUser = query(async () => {
 
 export const addUser = async (form: FormData) => {
   'use server'
-  const userData = usersSchema.parse({
+  try{
+  const userData = registerSchema.parse({
     name: form.get('name'),
     email: form.get('email'),
     password: form.get('password'),
-    administrator: form.get('administrator') === 'true',
-    reservations: [],
-    contacts: [],
-    sportsCenters: [],
+    administrator: form.get('administrator'),
   })
 
   // Hash the password before storing
@@ -108,9 +113,14 @@ export const addUser = async (form: FormData) => {
       administrator: userData.administrator,
       reservations: {},
       contacts: {},
+      contactOf: {},
       sportsCenters: {},
     },
   })
+  } catch (error) {
+    console.error('Error adding user:', error)
+    throw new Error('Error adding user')
+  }
 }
 
 export const addUserAction = action(addUser, 'addUser')

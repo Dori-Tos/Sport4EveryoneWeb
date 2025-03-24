@@ -3,7 +3,7 @@ import { FileRoutes } from "@solidjs/start/router"
 import { Suspense, onMount } from "solid-js"
 import Nav from "~/components/Nav"
 import { useAuth, initializeAuth } from "~/lib/auth"
-import LoginPopup from "~/components/LoginPopup"
+import AuthPopup from "~/components/AuthPopup"
 import { UserProvider } from "~/components/Main"
 import "./app.css"
 
@@ -35,7 +35,7 @@ export default function App() {
             <Suspense>
               {props.children}
             </Suspense>
-            {!isLoading() && !isAuthenticated() && <LoginPopup />}
+            {!isLoading() && !isAuthenticated() && <AuthPopup />}
           </>
         )}
       >

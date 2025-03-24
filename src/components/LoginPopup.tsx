@@ -2,7 +2,11 @@ import { createSignal, Show } from "solid-js"
 import { useAuth } from "~/lib/auth"
 import { useNavigate } from "@solidjs/router"
 
-export default function LoginPopup() {
+interface LoginPopupProps {
+  onSwitchToSignUp: () => void;
+}
+
+export default function LoginPopup({ onSwitchToSignUp } : LoginPopupProps ) {
   const [email, setEmail] = createSignal("")
   const [password, setPassword] = createSignal("")
   const [error, setError] = createSignal("")
@@ -111,6 +115,20 @@ export default function LoginPopup() {
           >
             {loading() ? "Logging in..." : "Login"}
           </button>
+
+          <div class="text-center mt-4">
+            <p class="text-gray-600">
+              Don't have an account?{" "}
+              <button 
+                type="button"
+                onClick={onSwitchToSignUp} 
+                class="text-blue-600 hover:underline"
+                disabled={loading()}
+              >
+                Sign Up
+              </button>
+            </p>
+          </div>
         </form>
       </div>
     </div>
