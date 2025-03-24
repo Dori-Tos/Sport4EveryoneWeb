@@ -1,4 +1,4 @@
-import { query, action, A } from '@solidjs/router'
+import { query, action } from '@solidjs/router'
 import { db } from './db'
 import { z } from 'zod'
 import { getSession } from './auth/session'
@@ -17,31 +17,36 @@ export const usersSchema = z.object({
 
 export type User = z.infer<typeof usersSchema>
 
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+})
+
 export const getUsers = query(async () => {
-    'use server'
-    const users = await db.user.findMany({
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          administrator: true,
-          // Don't include password in the response
-          reservations: true,
-          contacts: {
-            include: {
-              contact: true,
-            },
-          },
-          contactOf: {
-            include: {
-              user: true,
-            },
-          },
-          sportsCenters: true,
+  'use server'
+  const users = await db.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      administrator: true,
+      // Don't include password in the response
+      reservations: true,
+      contacts: {
+        include: {
+          contact: true,
         },
-      })
-    
-      return users
+      },
+      contactOf: {
+        include: {
+          user: true,
+        },
+      },
+      sportsCenters: true,
+    },
+  })
+
+  return users
 }, 'getUsers')
 
 export const getUser = query(async () => {
@@ -51,7 +56,7 @@ export const getUser = query(async () => {
     if (!session.data.email) {
       return null
     }
-    
+
     return await db.user.findUniqueOrThrow({
       where: { email: session.data.email },
       select: {
@@ -90,10 +95,10 @@ export const addUser = async (form: FormData) => {
     contacts: [],
     sportsCenters: [],
   })
-  
+
   // Hash the password before storing
   const hashedPassword = await bcrypt.hash(userData.password, 10)
-  
+
   return await db.user.create({
     data: {
       name: userData.name,
@@ -125,17 +130,17 @@ export const updateUser = async (id: number, data: any) => {
   if (!session.data.email) {
     throw new Error("Not authenticated")
   }
-  
+
   const currentUser = await db.user.findUniqueOrThrow({
     where: { email: session.data.email },
     select: { id: true, administrator: true }
   })
-  
+
   // Only allow users to update their own profile unless they're an admin
   if (currentUser.id !== id && !currentUser.administrator) {
     throw new Error("Unauthorized")
   }
-  
+
   const userData = usersSchema.parse(data)
   const updateData: any = {}
 
@@ -149,7 +154,7 @@ export const updateUser = async (id: number, data: any) => {
       updateData.administrator = userData.administrator
     }
   }
-  
+
   // These complex relations should be handled carefully if needed
   // Typically these would be updated through separate endpoints
   // but included here for completeness

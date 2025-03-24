@@ -1,4 +1,4 @@
-import { createSignal, Show, For, createResource } from "solid-js"
+import { createSignal, Show, For, createResource, createEffect} from "solid-js"
 import { MainCentered } from "~/components/Main"
 import { MainHeader, MediumHeader } from "~/components/Header"
 import { TableCentered } from "~/components/MainTable"

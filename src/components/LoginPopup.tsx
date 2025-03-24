@@ -10,7 +10,7 @@ export default function LoginPopup() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setError("")
     
@@ -21,17 +21,37 @@ export default function LoginPopup() {
     
     try {
       setLoading(true)
-      const result = await login(email(), password())
+    
+      // Use FormData for better security when submitting to server
+      const formData = new FormData()
+      formData.append('email', email())
+      formData.append('password', password())
       
-      if (result.success) {
-        // Clear form after successful login
-        setEmail("")
+      const result = await fetch('/api/login', {
+        method: 'POST',
+        body: formData,
+        // Add proper headers for security
+        headers: {
+          // CSRF protection token if available
+          // 'X-CSRF-Token': getCsrfToken(),
+        }
+      })
+      
+      const data = await result.json()
+      
+      if (data.success) {
+        // Clear sensitive data from memory
         setPassword("")
-        // Optionally redirect to dashboard or profile
-        navigate('/profile')
+        setEmail("")
+        
+        // Update authentication state
+        await login(data.user)
+        
+        // Redirect to home page
+        navigate('/')
       } else {
-        setError(result.message || "Invalid email or password")
-      }
+        setError(data.message || "Invalid email or password")
+      }       
     } catch (err) {
       console.error("Login error:", err)
       setError("An unexpected error occurred. Please try again.")
@@ -45,7 +65,7 @@ export default function LoginPopup() {
       <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <h2 class="text-2xl font-bold mb-4">Login Required</h2>
         
-        <form onSubmit={handleLogin} class="space-y-4">
+        <form onSubmit={handleLogin} class="space-y-4" autocomplete="on">
           <Show when={error()}>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               {error()}

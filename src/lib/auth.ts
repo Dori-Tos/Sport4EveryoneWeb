@@ -1,147 +1,129 @@
-import { createSignal, createEffect } from "solid-js"
-import { getSession } from "./auth/session"
-import { db } from "./db"
-import bcrypt from "bcryptjs"
-import { type User } from "./users"
-import { getUser } from "./users"
+import { createSignal } from "solid-js"
+import type { User } from "./users"
 
+// Store auth state but never store passwords
 const [isAuthenticated, setIsAuthenticated] = createSignal(false)
 const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 const [isLoading, setIsLoading] = createSignal(true)
 
-// Initialize authentication state from session
-async function initializeAuth() {
+// Server action to check authentication status
+export async function checkAuthStatus() {
+  'use server'
   try {
-    setIsLoading(true)
+    const { getSession } = await import('./auth/session')
+    const { getUser } = await import('./users')
+    
     const session = await getSession()
     
-    if (session.data.email) {
-      const user = await db.user.findUnique({
-        where: { email: session.data.email },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          administrator: true,
-          // Don't include password in the response
-          reservations: true,
-          contacts: {
-            include: {
-              contact: true,
-            },
-          },
-          contactOf: {
-            include: {
-              user: true,
-            },
-          },
-          sportsCenters: true,
-        }
-      })
-      
+    // Check for userId instead of email for better security
+    if (session.data.userId) {
+      const user = await getUser()
       if (user) {
-        setCurrentUser(user)
-        setIsAuthenticated(true)
+        // Remove sensitive data before returning
+        const { password, ...safeUser } = user
+        return { authenticated: true, user: safeUser }
       } else {
-        // Session exists but user doesn't - clear invalid session
         await session.clear()
-        setCurrentUser(null)
-        setIsAuthenticated(false)
+        return { authenticated: false }
       }
+    } else {
+      return { authenticated: false }
+    }
+  } catch (error) {
+    console.error("Auth status check error:", error)
+    return { authenticated: false, error: "Failed to check authentication status" }
+  }
+}
+
+// Server action for logout
+export async function performLogout() {
+  'use server'
+  const { getSession } = await import('./auth/session')
+  const session = await getSession()
+  await session.clear()
+  return { success: true }
+}
+
+// Create a client-side initialization function
+export async function initializeAuth() {
+  try {
+    // Call the server action
+    const result = await checkAuthStatus()
+    
+    if (result.authenticated && result.user) {
+      setCurrentUser(result.user)
+      setIsAuthenticated(true)
     } else {
       setCurrentUser(null)
       setIsAuthenticated(false)
     }
+    
+    return result
   } catch (error) {
     console.error("Auth initialization error:", error)
     setCurrentUser(null)
     setIsAuthenticated(false)
+    return { authenticated: false, error: "Authentication failed" }
   } finally {
     setIsLoading(false)
   }
 }
 
-// Call this when your app starts
-// Typically in your root component or layout
-initializeAuth()
-
 export function useAuth() {
-  const login = async (email: string, password: string) => {
-    try {
-      const user = await db.user.findUnique({ 
-        where: { email },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          password: true, // Need password for comparison
-          administrator: true,
-          reservations: true,
-          contacts: {
-            include: {
-              contact: true,
-            },
-          },
-          contactOf: {
-            include: {
-              user: true,
-            },
-          },
-          sportsCenters: true,
-        }
-      })
-      
-      if (user && await bcrypt.compare(password, user.password)) {
-        const session = await getSession()
-        await session.update({ email: user.email })
-        
-        // Remove password from user object before storing in state
-        const { password: _, ...userWithoutPassword } = user
-        setCurrentUser(userWithoutPassword)
-        setIsAuthenticated(true)
-        return { success: true, user: userWithoutPassword }
-      }
-      return { success: false, message: "Invalid credentials" }
-    } catch (error) {
-      console.error("Login error:", error)
-      return { success: false, message: "Authentication failed" }
-    }
+  // Update login to use user object directly instead of email/password
+  const login = async (user: Omit<User, 'password'>) => {
+    setCurrentUser(user)
+    setIsAuthenticated(true)
+    return { success: true }
   }
   
   const logout = async () => {
     try {
-      const session = await getSession()
-      await session.clear()
+      setIsLoading(true)
+      // Call the server action for logout
+      const logoutResult = await performLogout()
+      
+      // Clear user data from memory
       setCurrentUser(null)
       setIsAuthenticated(false)
       return { success: true }
     } catch (error) {
       console.error("Logout error:", error)
       return { success: false, message: "Logout failed" }
+    } finally {
+      setIsLoading(false)
     }
   }
   
   const refreshUser = async () => {
     try {
-      const userData = await getUser()
-      if (userData) {
-        setCurrentUser(userData)
-        return userData
+      setIsLoading(true)
+      const authStatus = await checkAuthStatus()
+      
+      if (authStatus.authenticated && authStatus.user) {
+        setCurrentUser(authStatus.user)
+        setIsAuthenticated(true)
+        return authStatus.user
       }
+      
+      setIsAuthenticated(false)
+      setCurrentUser(null)
       return null
     } catch (error) {
       console.error("User refresh error:", error)
       return null
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return { 
     isAuthenticated, 
     currentUser,
-    setCurrentUser,
     login,
     logout,
     refreshUser,
-    isLoading
+    isLoading,
+    setLoading: setIsLoading
   }
 }
