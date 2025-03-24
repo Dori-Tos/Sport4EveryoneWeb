@@ -1,6 +1,6 @@
 import { For, createSignal } from "solid-js"
 import { MainCentered } from "./Main"
-import { ReservationItem, SportFieldsItem } from "~/components/Items"
+import { ReservationSaveItem, SportFieldsItem } from "~/components/Items"
 import { addReservationAction } from "~/lib/reservations"
 import { useAuth } from "~/lib/auth"
 
@@ -9,11 +9,11 @@ type PopupProps = {
   centerName: string | undefined
   centerId: number | undefined
   onClose: () => void
-  onSave: (reservation: ReservationItem) => void
+  onSave: (reservations: ReservationSaveItem[]) => void
 }
 
 export function PopupSportFields(props: PopupProps) {
-  const { currentUser, setCurrentUser } = useAuth()
+  const { currentUser, refreshUser } = useAuth()
   const [selectedDate, setSelectedDate] = createSignal('2025-01-01')
   const [startTime, setStartTime] = createSignal('10:00')
   const [endTime, setEndTime] = createSignal('11:00')
@@ -30,28 +30,29 @@ export function PopupSportFields(props: PopupProps) {
   }
 
   const handleSave = async () => {
-    const reservations = await Promise.all(
-      selectedCheckboxes().map(async (selectedFieldId) => {
-        const field = props.data.find((field) => field.id === selectedFieldId)
-        const price = field ? field.price : 0
+    if (currentUser() !== null) {
+      const reservations = await Promise.all(
+        selectedCheckboxes().map(async (selectedFieldId) => {
+          const field = props.data.find((field) => field.id === selectedFieldId)
+          const price = field ? field.price : 0
 
-        const formData = new FormData()
-        formData.append('userId', currentUser().id.toString())
-        formData.append('sportCenterId', props.centerId.toString())
-        formData.append('sportFieldId', selectedFieldId.toString())
-        formData.append('startDateTime', selectedDate())
-        formData.append('duration', `${startTime()} - ${endTime()}`)
-        formData.append('price', price.toString())
-
-        const reservation = await addReservationAction(formData)
-        return reservation
-      })
-    )
-    setCurrentUser({
-      ...currentUser(),
-      reservations: [...currentUser().reservations, ...reservations],
-    })
-    props.onClose()
+          const formData = new FormData()
+          formData.append('userID', currentUser().id.toString())
+          formData.append('sportCenterID', props.centerId.toString())
+          formData.append('sportFieldID', selectedFieldId.toString())
+          formData.append('startDateTime', selectedDate())
+          formData.append('duration', `${startTime()} - ${endTime()}`)
+          formData.append('price', price.toString())
+          
+          const reservation = await addReservationAction(formData)
+          console.log('Reservation:', reservation)
+          return reservation
+          })
+      )
+      await refreshUser()
+      props.onSave(reservations)
+      props.onClose()
+    }
   }
 
   return (

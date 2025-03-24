@@ -5,6 +5,7 @@ import { getSession } from './auth/session'
 import bcrypt from 'bcryptjs'
 
 export const usersSchema = z.object({
+  id: z.number(),
   name: z.string(),
   email: z.string().email(),
   password: z.string().optional(), // Make password optional for updates
@@ -53,12 +54,12 @@ export const getUser = query(async () => {
   'use server'
   try {
     const session = await getSession()
-    if (!session.data.email) {
+    if (!session.data.userId) {
       return null
     }
 
     return await db.user.findUniqueOrThrow({
-      where: { email: session.data.email },
+      where: { id: session.data.userId },
       select: {
         id: true,
         name: true,
@@ -97,7 +98,7 @@ export const addUser = async (form: FormData) => {
   })
 
   // Hash the password before storing
-  const hashedPassword = await bcrypt.hash(userData.password, 10)
+  const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10): ''
 
   return await db.user.create({
     data: {
@@ -127,13 +128,13 @@ export const updateUser = async (id: number, data: any) => {
   // Validate the session to ensure the user can only update their own profile
   // unless they are an administrator
   const session = await getSession()
-  if (!session.data.email) {
+  if (!session.data.userId) {
     throw new Error("Not authenticated")
   }
 
   const currentUser = await db.user.findUniqueOrThrow({
-    where: { email: session.data.email },
-    select: { id: true, administrator: true }
+    where: { id: session.data.userId },
+    select: { id: true, email: true, administrator: true }
   })
 
   // Only allow users to update their own profile unless they're an admin

@@ -3,12 +3,15 @@ import { db } from './db'
 import { z } from 'zod'
 
 export const reservationSchema = z.object({
-    userID: z.coerce.number(),
-    sportsCenterID: z.coerce.number(),
-    sportFieldID: z.coerce.number(),
-    startDateTime: z.string().datetime(),
-    duration: z.number(),
-    price: z.number(),
+  id: z.number().optional(),
+  userID: z.coerce.number(),
+  sportsCenterID: z.coerce.number(),
+  sportFieldID: z.coerce.number(),
+  startDateTime: z.string().datetime(),
+  duration: z.number(),
+  price: z.number(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 })
 
 type Reservation = z.infer<typeof reservationSchema>

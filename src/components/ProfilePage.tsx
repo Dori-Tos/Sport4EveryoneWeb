@@ -7,7 +7,7 @@ import { getUser } from "~/lib/users"
 import EditProfilePopup from "~/components/EditProfilePopup"
 
 export default function ProfilePage() {
-  const { currentUser, setCurrentUser } = useAuth()
+  const { currentUser, refreshUser } = useAuth()
   const [showPopup, setShowPopup] = createSignal(false)
   
   // Use createResource to fetch the latest user data from the server
@@ -16,7 +16,7 @@ export default function ProfilePage() {
   // Update the current user when userData changes
   const handleUserDataUpdate = () => {
     if (userData() && !userData.loading) {
-      setCurrentUser(userData())
+      refreshUser()
     }
   }
   

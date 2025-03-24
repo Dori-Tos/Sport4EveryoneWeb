@@ -14,6 +14,15 @@ export type SportFieldsItem = {
   price: string
 }
 
+export type ReservationSaveItem = {
+  startDateTime: string
+  duration: string
+  price: number
+  sportFieldId: number
+  sportCenterId: number
+  userId: number
+}
+
 export type ReservationItem = {
   id: number
   startDateTime: string
