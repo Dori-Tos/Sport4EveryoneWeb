@@ -3,15 +3,12 @@ import { db } from './db'
 import { z } from 'zod'
 
 export const reservationSchema = z.object({
-  id: z.number().optional(),
   userID: z.coerce.number(),
   sportsCenterID: z.coerce.number(),
   sportFieldID: z.coerce.number(),
   startDateTime: z.string().datetime(),
-  duration: z.number(),
-  price: z.number(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
+  duration: z.coerce.number(),
+  price: z.coerce.number(),
 })
 
 type Reservation = z.infer<typeof reservationSchema>
@@ -31,6 +28,7 @@ export const getReservations = query(async () => {
 
 export const addReservation = async (form: FormData) => {
   'use server'
+  console.log('form Data:', form)
   const reservationData = reservationSchema.parse({
     userID: form.get('userID'),
     sportsCenterID: form.get('sportsCenterID'),
@@ -39,6 +37,7 @@ export const addReservation = async (form: FormData) => {
     duration: form.get('duration'),
     price: form.get('price'),
   })
+  console.log('Reservation Data:', reservationData)
   return await db.reservation.create({
     data: {
       user: {

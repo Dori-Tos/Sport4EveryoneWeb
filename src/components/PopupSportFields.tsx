@@ -1,8 +1,8 @@
-import { For, createSignal } from "solid-js"
-import { MainCentered } from "./Main"
+import { For, createSignal, Show } from "solid-js"
 import { ReservationSaveItem, SportFieldsItem } from "~/components/Items"
-import { addReservationAction } from "~/lib/reservations"
+import { addReservationAction } from "~/lib/reservations" 
 import { useAuth } from "~/lib/auth"
+import { useSubmission } from "@solidjs/router"
 
 type PopupProps = {
   data: Array<SportFieldsItem>
@@ -17,42 +17,37 @@ export function PopupSportFields(props: PopupProps) {
   const [selectedDate, setSelectedDate] = createSignal('2025-01-01')
   const [startTime, setStartTime] = createSignal('10:00')
   const [endTime, setEndTime] = createSignal('11:00')
-  const [selectedCheckboxes, setSelectedCheckboxes] = createSignal<number[]>([])
+  const [selectedFieldId, setSelectedFieldId] = createSignal<number | null>(null)
+  const [selectedFieldPrice, setSelectedFieldPrice] = createSignal<number>(0)
+  const submission = useSubmission(addReservationAction)
 
-  const handleCheckboxesChange = (id: number) => {
-    setSelectedCheckboxes((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((fieldId) => fieldId !== id)
-      } else {
-        return [...prev, id]
-      }
-    })
+  // Handle radio button selection
+  const handleFieldSelection = (id: number, price: number) => {
+    setSelectedFieldId(id)
+    setSelectedFieldPrice(price)
+  }
+  
+  // Calculate duration in hours between start and end time
+  const calculateDuration = () => {
+    if (!startTime() || !endTime()) return 1
+
+    const start = new Date(`1970-01-01T${startTime()}:00`)
+    const end = new Date(`1970-01-01T${endTime()}:00`)
+    const durationMs = end.getTime() - start.getTime()
+    const durationHours = Math.max(1, Math.round(durationMs / (1000 * 60 * 60)))
+    
+    return durationHours
   }
 
-  const handleSave = async () => {
-    if (currentUser() !== null) {
-      const reservations = await Promise.all(
-        selectedCheckboxes().map(async (selectedFieldId) => {
-          const field = props.data.find((field) => field.id === selectedFieldId)
-          const price = field ? field.price : 0
-
-          const formData = new FormData()
-          formData.append('userID', currentUser().id.toString())
-          formData.append('sportCenterID', props.centerId.toString())
-          formData.append('sportFieldID', selectedFieldId.toString())
-          formData.append('startDateTime', selectedDate())
-          formData.append('duration', `${startTime()} - ${endTime()}`)
-          formData.append('price', price.toString())
-          
-          const reservation = await addReservationAction(formData)
-          console.log('Reservation:', reservation)
-          return reservation
-          })
-      )
-      await refreshUser()
-      props.onSave(reservations)
-      props.onClose()
-    }
+  const isFormValid = () => {
+    return (
+      currentUser()?.id !== undefined &&
+      props.centerId !== undefined &&
+      selectedFieldId() !== null &&
+      selectedDate() &&
+      startTime() &&
+      endTime()
+    )
   }
 
   return (
@@ -66,10 +61,20 @@ export function PopupSportFields(props: PopupProps) {
             Close
           </button>
         </div>
-        <div>
-          <h3 class="text-lg font-bold mb-2">Reservation</h3>
-        </div>
-        <div class="flex items-center mb-4">
+        
+        <form method="post" action={addReservationAction}>
+          <input type="hidden" name="userID" value={currentUser()?.id} />
+          <input type="hidden" name="sportsCenterID" value={props.centerId} />
+          <input type="hidden" name="startDateTime" value={`${selectedDate()}T${startTime()}:00Z`} />
+          <input type="hidden" name="duration" value={calculateDuration()} />
+          <input type="hidden" name="price" value={selectedFieldPrice() * calculateDuration()} />
+          <input type="hidden" name="sportFieldID" value={selectedFieldId()} />
+          
+          <div>
+            <h3 class="text-lg font-bold mb-2">Reservation</h3>
+          </div>
+          
+          <div class="flex items-center mb-4">
             <label class="block mb-4 font-semibold mr-4 w-100">Select Date:</label>
             <input
               type="date"
@@ -96,41 +101,58 @@ export function PopupSportFields(props: PopupProps) {
               value={endTime()}
               onInput={(e) => setEndTime(e.currentTarget.value)}
             />
-        </div>
-        {props.data.length > 0 ? (
-          <div class="border border-gray-300 rounded-md p-2">
-          <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
-            <span class="w-1/12"></span>
-            <span class="w-7/12 font-semibold">SportField Name</span>
-            <span class="w-4/12 font-semibold">Price</span>
           </div>
-          <ul>
-            <For each={props.data}>
-              {(field: SportFieldsItem) => (
-                <li class="mb-2">
-                  <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
-                    <input
-                      type="checkbox"
-                      class="mr-2 w-1/12"
-                      checked={selectedCheckboxes().includes(field.id)}
-                      onChange={() => handleCheckboxesChange(field.id)}
-                    />
-                    <span class="w-7/12 font-semibold">{field.name}</span>
-                    <span class="w-4/12 text-gray-600">{field.price}€/h</span>
-                  </div>
-                </li>
-              )}
-            </For>
-          </ul>
-        </div>
-        ) : (
-          <p>No sport fields available.</p>
-        )}
-        <div class="flex justify-end mt-4">
-          <button class="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleSave}>
-            Save
-          </button>
-        </div>
+          
+          {props.data.length > 0 ? (
+            <div class="border border-gray-300 rounded-md p-2">
+              <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
+                <span class="w-1/12"></span>
+                <span class="w-7/12 font-semibold">SportField Name</span>
+                <span class="w-4/12 font-semibold">Price</span>
+              </div>
+              <ul>
+                <For each={props.data}>
+                  {(field: SportFieldsItem) => (
+                    <li class="mb-2">
+                      <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-2">
+                      <input
+                          type="radio"
+                          class="mr-2 w-1/12"
+                          id={`field-${field.id}`}
+                          checked={selectedFieldId() === field.id}
+                          onInput={() => handleFieldSelection(field.id, parseFloat(field.price))}
+                        />
+                        <span class="w-7/12 font-semibold">{field.name}</span>
+                        <span class="w-4/12 text-gray-600">{field.price}€/h</span>
+                      </div>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </div>
+          ) : (
+            <p>No sport fields available.</p>
+          )}
+
+          <Show when={selectedFieldId() !== null}>
+            <div class="mt-4 p-3 bg-blue-50 rounded-md">
+              <h3 class="font-semibold mb-2">Reservation Summary</h3>
+              <p>Date: {selectedDate()}</p>
+              <p>Time: {startTime()} to {endTime()} ({calculateDuration()} hour{calculateDuration() > 1 ? 's' : ''})</p>
+              <p>Total Price: {(selectedFieldPrice() * calculateDuration()).toFixed(2)}€</p>
+            </div>
+          </Show>
+          
+          <div class="flex justify-end mt-4">
+            <button 
+              type="submit" 
+              class="bg-blue-500 text-white px-4 py-2 rounded"
+              disabled={!isFormValid() || submission.pending}
+            >
+              {submission.pending ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
