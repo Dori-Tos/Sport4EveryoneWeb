@@ -7,26 +7,37 @@ import { removeContactAction } from "~/lib/contacts"
 
 type ContactsTableProps = {
   userContacts: () => Array<any>
+  onContactDeleted: () => void
 }
 
 export default function ContactsTable(props: ContactsTableProps) {
   const { currentUser } = useAuth()
-
+  
   const handleRemoveContact = async (contactId: number) => {
-    if (!currentUser()?.id) return
-    
     try {
-      await removeContactAction(currentUser().id, contactId)
-      // The parent component will need to refetch contacts after removal
-      props.userContacts.refetch()
+      if (!currentUser()?.id) return
+
+      const formData = new FormData()
+      formData.append("userId", currentUser().id.toString())
+      formData.append("contactId", contactId.toString())
+       
+      const response = await fetch("/api/contacts/", {
+        method: "DELETE",
+        body: formData
+      })
+      if (!response.ok) {
+        throw new Error("Failed to remove contact")
+      }
+      
+      props.onContactDeleted()
     } catch (error) {
       console.error("Failed to remove contact:", error)
     }
   }
 
   return (
-      <>
-<MainCentered>
+    <>
+      <MainCentered>
         <div class="bg-white shadow-md rounded-lg p-6 max-w-2xl mx-auto">
           <h2 class="text-xl font-bold mb-4">Your Contacts</h2>
           <TableCentered>
@@ -62,6 +73,6 @@ export default function ContactsTable(props: ContactsTableProps) {
           </TableCentered>
         </div>
       </MainCentered>
-      </>
+    </>
   )
 }

@@ -36,7 +36,7 @@ export default function Contacts() {
         <ContactSearchBar onContactAdded={refreshContacts} />
       </div>
 
-      <ContactsTable userContacts={userContacts}/>
+      <ContactsTable userContacts={userContacts} onContactDeleted={refreshContacts}/>
     </MainCentered>
   )
 }
