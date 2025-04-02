@@ -19,17 +19,17 @@ export type ReservationSaveItem = {
   duration: string
   price: number
   sportFieldId: number
-  sportCenterId: number
+  sportsCenterId: number
   userId: number
 }
 
 export type ReservationItem = {
   id: number
-  startDateTime: string
+  date: string
   duration: string
   price: number
   sportFieldId: number
-  sportCenterId: number
+  sportsCenterId: number
   userId: number
 }
 

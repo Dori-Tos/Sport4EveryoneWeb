@@ -5,9 +5,12 @@ import { MainHeader, MediumHeader } from "~/components/Header"
 import { TableCentered } from "~/components/MainTable"
 import SportTable from "~/components/SportTable"
 import SportSelector from "~/components/SportSelector"
-import { addSport, getSports } from "~/lib/sports"
-import { addSportField, getSportFields } from "~/lib/sportFields"
-import { addSportsCenter, getSportsCenters, getSportsCentersBySport } from "~/lib/sportsCenters"
+import { useAuth } from "~/lib/auth"
+import { getSports } from "~/lib/sports"
+import { getSportFields } from "~/lib/sportFields"
+import { getSportsCentersBySport } from "~/lib/sportsCenters"
+import { getReservationsByUser } from "~/lib/reservations"
+import ReservationsTable from "~/components/ReservationsTable"
 
 export const route = {
   preload() {
@@ -16,6 +19,7 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function Home() {
+  const { currentUser, refreshUser } = useAuth()
   const [selectedSport, setSelectedSport] = createSignal("football")
 
   const sports = createAsyncStore(() => getSports(), { initialValue: [] })
@@ -38,10 +42,16 @@ export default function Home() {
       "Attendance": "Attendance Unavailable",
     }
   ]})
+
+  const userReservations = createAsyncStore(async () => {
+    if (!currentUser()?.id) return []
+    
+    return await getReservationsByUser(currentUser()?.id)
+  }, { initialValue: [] })
   
   return (
     <MainCentered>
-      <MainHeader string="Home Page"/>
+      <MainHeader string="Sports Centers"/>
       <TableCentered>
         <SportSelector 
           data={sports()} 
@@ -52,10 +62,9 @@ export default function Home() {
           data={sportsTableData() || []} 
         />
       </TableCentered>
-      <MediumHeader string="Notifications"/>
-      <TableCentered>
-        <p>To Do</p>
-      </TableCentered>
+      <MediumHeader string="Reservations"/>
+      <ReservationsTable userReservations={userReservations}
+        />
     </MainCentered>
   )
 }

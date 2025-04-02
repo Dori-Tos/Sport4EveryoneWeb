@@ -26,6 +26,22 @@ export const getReservations = query(async () => {
       return reservations
 }, 'getReservations')
 
+export const getReservationsByUser = query(async (userID: number) => {
+    'use server'
+    const reservations = await db.reservation.findMany({
+        where: {
+          userId : userID,
+        },
+        include: {
+          user: true,
+          sportsCenter: true,
+          sportField: true,
+        },
+      })
+    
+      return reservations
+}, 'getReservationsByUser')
+
 export const addReservation = async (form: FormData) => {
   'use server'
   console.log('form Data:', form)
