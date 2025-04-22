@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router"
-import { JSXElement } from "solid-js"
+import { JSXElement, Show } from "solid-js"
 import { useAuth } from "~/lib/auth"
 
 type NavLinkProps = {
@@ -19,7 +19,7 @@ function NavLink(props: NavLinkProps) {
 }
 
 export default function Nav() {
-  const { logout } = useAuth()
+  const { logout, currentUser } = useAuth()
   
   const handleLogout = (e) => {
     e.preventDefault()
@@ -30,9 +30,11 @@ export default function Nav() {
     <nav class="bg-sky-800">
       <ul class="flex items-center p-3 text-gray-200 w-full px-4">
         <NavLink href="/">Home</NavLink>
-        <NavLink href="/map">Map</NavLink>
         <NavLink href="/contacts">Contacts</NavLink>
+        {/* Only show Sports Fields link if user is an administrator */}
+        <Show when={currentUser()?.administrator}>
         <NavLink href="/sportFields">Sports Fields</NavLink>
+        </Show>
         <li class="ml-auto flex items-center">
           <NavLink href="/profile">Profile</NavLink>
           <button 

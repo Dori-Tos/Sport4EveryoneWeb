@@ -38,6 +38,18 @@ export const getSportsCentersBySport = query(async (sportName: string) => {
     })
 }, 'sportsCenterBySport')
 
+export const getSportsCentersByUser = query(async (userId: number) => {
+    'use server'
+    return await db.sportsCenter.findMany({
+        where: { ownerId: userId },
+        include: {
+            sportFields: {
+                select: { id: true },
+            },
+        }
+    })
+}, 'sportsCenterByUser')
+
 export const addSportsCenter = async (form: FormData) => {    // Action synchronizes the data
     'use server'
     const sportsCenterData = sportsCenterSchema.parse({

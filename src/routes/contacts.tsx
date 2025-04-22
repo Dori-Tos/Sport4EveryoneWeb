@@ -1,14 +1,22 @@
-import { A } from "@solidjs/router"
-import { createAsyncStore } from "@solidjs/router"
+import { createAsyncStore, useNavigate } from "@solidjs/router"
+import { createEffect } from "solid-js"
 import { useAuth } from "~/lib/auth"
 import { MainCentered } from "~/components/Main"
-import { MainHeader, MediumHeader } from "~/components/Header"
+import { MainHeader } from "~/components/Header"
 import ContactsTable from "~/components/ContactsTable"
 import { getContactsByUser } from "~/lib/contacts"
 import ContactSearchBar from "~/components/ContactSearchBar"
 
 export default function Contacts() {
-  const { currentUser, refreshUser } = useAuth()
+  const { currentUser, refreshUser, isLoading } = useAuth()
+  const navigate = useNavigate()
+
+  createEffect(() => {
+    if (!isLoading() && !currentUser()) {
+      // Redirect unauthenticated users to login (which will show the login popup)
+      navigate('/login', { replace: true })
+    }
+  })
 
   let userContacts = createAsyncStore(async () => {
     if (!currentUser()?.id) return []
