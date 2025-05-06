@@ -29,6 +29,9 @@ export const getReservations = query(async () => {
 export const getReservationsByUser = query(async (userID: number) => {
     'use server'
     const reservations = await db.reservation.findMany({
+        orderBy: {
+          date: 'desc',
+        },
         where: {
           userId : userID,
         },

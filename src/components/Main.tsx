@@ -1,5 +1,4 @@
 import { JSXElement, createContext, useContext, createSignal } from "solid-js"
-import { useAuth } from "~/lib/auth"
 
 // Create a context for user data
 export const UserContext = createContext()

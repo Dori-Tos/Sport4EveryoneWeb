@@ -9,6 +9,7 @@ export const usersSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string().optional(), // Make password optional for updates
+  confirmPassword: z.string().optional(), // For confirmation during updates
   administrator: z.coerce.boolean(),
   reservations: z.array(z.any()).optional(),
   contacts: z.array(z.any()).optional(),
@@ -92,15 +93,13 @@ export const getUser = query(async () => {
   }
 }, 'getUser')
 
-export const addUser = async (form: FormData) => {
+export const addUser = async (formData: FormData) => {
   'use server'
-  try{
-  const userData = registerSchema.parse({
-    name: form.get('name'),
-    email: form.get('email'),
-    password: form.get('password'),
-    administrator: form.get('administrator'),
-  })
+  const userData = usersSchema.parse({...Object.fromEntries(formData.entries()) })
+
+  if (userData.password !== userData.confirmPassword) {
+    throw new Error("Passwords do not match")
+  }
 
   // Hash the password before storing
   const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10): ''
@@ -117,10 +116,6 @@ export const addUser = async (form: FormData) => {
       sportsCenters: {},
     },
   })
-  } catch (error) {
-    console.error('Error adding user:', error)
-    throw new Error('Error adding user')
-  }
 }
 
 export const addUserAction = action(addUser, 'addUser')
@@ -133,8 +128,9 @@ export const removeUser = async (id: number) => {
 
 export const removeUserAction = action(removeUser, 'removeUser')
 
-export const updateUser = async (id: number, data: any) => {
+export const updateUser = async (id: number, formData: FormData) => {
   'use server'
+
   // Validate the session to ensure the user can only update their own profile
   // unless they are an administrator
   const session = await getSession()
@@ -152,23 +148,23 @@ export const updateUser = async (id: number, data: any) => {
     throw new Error("Unauthorized")
   }
 
-  const userData = usersSchema.parse(data)
+  const userData = usersSchema.parse({ id, ...Object.fromEntries(formData.entries()) })
   const updateData: any = {}
 
   if (userData.name !== undefined) updateData.name = userData.name
   if (userData.email !== undefined) updateData.email = userData.email
-  // Don't directly use the password from input - it should already be hashed if included
-  if (userData.password !== undefined) updateData.password = userData.password
+  // We don't directly use the password from input
+  if (userData.password !== undefined && userData.password == userData.confirmPassword) {
+    // Hash the password before storing
+    const hashedPassword = await bcrypt.hash(userData.password, 10)
+    updateData.password = hashedPassword
+  }
   if (userData.administrator !== undefined) {
-    // Only allow changing administrator status if the current user is an admin
+    // Changing administrator status allowed only if the current user is an admin
     if (currentUser.administrator) {
       updateData.administrator = userData.administrator
     }
   }
-
-  // These complex relations should be handled carefully if needed
-  // Typically these would be updated through separate endpoints
-  // but included here for completeness
   if (userData.reservations !== undefined) updateData.reservations = userData.reservations
   if (userData.contacts !== undefined) updateData.contacts = userData.contacts
   if (userData.sportsCenters !== undefined) updateData.sportsCenters = userData.sportsCenters

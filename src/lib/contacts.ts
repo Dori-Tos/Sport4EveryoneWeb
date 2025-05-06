@@ -37,10 +37,10 @@ export const getContactsByUser = query(async (userId: number) => {
   return contacts
 }, 'getContactsByUser')
 
-export const addContact = async (userId: number, contactId: number) => {
+export const addContact = async (formData: FormData) => {
   'use server'
-  
-  console.log("Server: Adding contact", { userId, contactId })
+  const userId = Number(formData.get('userId'))
+  const contactId = Number(formData.get('contactId'))
   
   if (!userId || !contactId) {
     throw new Error("Invalid userId or contactId")
@@ -69,32 +69,45 @@ export const addContact = async (userId: number, contactId: number) => {
       return existingContact // Contact already exists
     }
 
-    // Create the contact relationship
-    return await db.contact.create({
+    // Create the both way contact relationship
+    await db.contact.create({
       data: {
         userId: userId,
         contactId: contactId,
       },
     })
+    return await db.contact.create({
+      data: {
+        userId: contactId,
+        contactId: userId,
+      },
+    })
+
   } catch (error) {
     console.error("Server error adding contact:", error)
     throw error
   }
 }
 
-  
 export const addContactAction = action(addContact, 'addContact')
   
-export const removeContact = async (userId: number, contactId: number) => {
-    'use server'
-    return await db.contact.delete({
-      where: {
-        userId_contactId: {
-          userId: userId,
-          contactId: contactId
-        }
-      }
-    })
+export const removeContact = async (formData: FormData) => {
+  'use server'
+  const userId = Number(formData.get('userId'))
+  const contactId = Number(formData.get('contactId'))
+  
+  if (!userId || !contactId || isNaN(userId) || isNaN(contactId)) {
+    throw new Error("Invalid userId or contactId")
   }
   
+  return await db.contact.delete({
+    where: {
+      userId_contactId: {
+        userId: userId,
+        contactId: contactId
+      }
+    }
+  })
+}
+
 export const removeContactAction = action(removeContact, 'removeContact')

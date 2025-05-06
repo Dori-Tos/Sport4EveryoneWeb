@@ -1,16 +1,17 @@
-import { createAsyncStore, type RouteDefinition, useNavigate } from "@solidjs/router"
+import { createAsync, createAsyncStore, type RouteDefinition, useNavigate } from "@solidjs/router"
 import { createSignal, createEffect } from "solid-js"
 import { MainCentered } from "~/components/Main"
 import { MainHeader, MediumHeader } from "~/components/Header"
 import { TableCentered } from "~/components/MainTable"
 import SportTable from "~/components/SportTable"
 import SportSelector from "~/components/SportSelector"
-import { useAuth } from "~/lib/auth"
 import { getSports } from "~/lib/sports"
 import { getSportFields } from "~/lib/sportFields"
 import { getSportsCentersBySport } from "~/lib/sportsCenters"
 import { getReservationsByUser } from "~/lib/reservations"
 import ReservationsTable from "~/components/ReservationsTable"
+import { getUser } from "~/lib/users"
+import Layout from "~/components/Layout"
 
 export const route = {
   preload() {
@@ -19,16 +20,16 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function Home() {
-  const { currentUser, refreshUser, isLoading } = useAuth()
+  const user = createAsync(() => getUser())
   const [selectedSport, setSelectedSport] = createSignal("football")
   const navigate = useNavigate()
 
-  createEffect(() => {
-    if (!isLoading() && !currentUser()) {
-      // Redirect unauthenticated users to login (which will show the login popup)
-      navigate('/login', { replace: true })
-    }
-  })
+  // createEffect(() => {
+  //   if (user() == undefined && user() == null) {
+  //     // Redirect unauthenticated users to login (which will show the login popup)
+  //     navigate('/login', { replace: true })
+  //   }
+  // })
 
   const sports = createAsyncStore(() => getSports(), { initialValue: [] })
 
@@ -52,27 +53,29 @@ export default function Home() {
   ]})
 
   const userReservations = createAsyncStore(async () => {
-    if (!currentUser()?.id) return []
+    if (!user()?.id) return []
     
-    return await getReservationsByUser(currentUser()?.id)
+    return await getReservationsByUser(user()?.id)
   }, { initialValue: [] })
   
   return (
-    <MainCentered>
-      <MainHeader string="Sports Centers"/>
-      <TableCentered>
-        <SportSelector 
-          data={sports()} 
-          selectedSport={selectedSport()} 
-          setSelectedSport={setSelectedSport} 
-        />
-        <SportTable 
-          data={sportsTableData() || []} 
-        />
-      </TableCentered>
-      <MediumHeader string="Reservations"/>
-      <ReservationsTable userReservations={userReservations}
-        />
-    </MainCentered>
+    <Layout protected={true}>
+      <MainCentered>
+        <MainHeader string="Sports Centers"/>
+        <TableCentered>
+          <SportSelector 
+            data={sports()} 
+            selectedSport={selectedSport()} 
+            setSelectedSport={setSelectedSport} 
+          />
+          <SportTable 
+            data={sportsTableData() || []} 
+          />
+        </TableCentered>
+        <MediumHeader string="Reservations"/>
+        <ReservationsTable userReservations={userReservations}
+          />
+      </MainCentered>
+    </Layout>
   )
 }

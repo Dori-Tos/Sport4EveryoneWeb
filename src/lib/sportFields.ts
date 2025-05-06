@@ -23,7 +23,10 @@ export const getSportFieldsBySportsCenter = query(async (sportsCenterId?: number
     'use server'
     if (sportsCenterId === undefined) return []
     return await db.sportsField.findMany({
-        where: { sportsCenterId: sportsCenterId }
+        where: { sportsCenterId: sportsCenterId },
+        include: {
+            sports: true
+        }
     })
 }, 'sportFieldsBySportsCenter' )
 
@@ -49,9 +52,26 @@ export const addSportField = async (form: FormData) => {
 
 export const addSportFieldAction = action(addSportField, 'addSportField')
 
-export const removeSportField = async (id: number) => {
+export const removeSportField = async (formData: FormData) => {
     'use server'
-    return await db.sportsField.delete({ where: { id } })
+    try {
+        const id = formData.get('id')?.toString()
+
+        return await db.sportsField.delete({ 
+            where: { 
+                id 
+            }, 
+            select: {
+                id: false,
+                name: false,
+                price: false,
+                sports: false,
+            }
+        })
+    } catch (error) {
+        console.error("Error removing sport field:", error)
+        throw new Error("Failed to remove sport field")
+    }
 }
 
 export const removeSportFieldAction = action(removeSportField, 'removeSportField')

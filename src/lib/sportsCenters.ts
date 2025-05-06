@@ -10,6 +10,13 @@ export const sportsCenterSchema = z.object({
     sportFields: z.array(z.coerce.number()),
 })
 
+export const newSportFieldSchema = z.object({
+    sportFieldName: z.string(),
+    sportFieldSports: z.array(z.coerce.number()),
+    sportFieldPrice: z.coerce.number(),
+    sportsCenterId: z.coerce.number(),
+})
+
 export const getSportsCenters = query(async () => {
     'use server'                              
     return await db.sportsCenter.findMany({
@@ -80,3 +87,48 @@ export const removeSportCenter = async (id: number) => {
 }
 
 export const removeSportCenterAction = action(removeSportCenter, 'removeSportCenter')
+
+export const addSportFieldToSportsCenter = async (form: FormData) => {
+    'use server'
+
+    try {
+        // Get all sportFieldSports values as an array
+        const sportFieldSports = form.getAll('sportFieldSports').map(Number);
+        
+        // Create a custom object with all form entries plus the array
+        const formData = {
+            ...Object.fromEntries(form.entries()),
+            sportFieldSports: sportFieldSports
+        }
+        
+        const queryData = newSportFieldSchema.parse(formData)
+
+        const sportFieldId = await db.sportsField.create({
+            data: {
+                name: queryData.sportFieldName,
+                sports: {
+                    connect: queryData.sportFieldSports.map((id) => ({ id }))
+                },
+                price: queryData.sportFieldPrice,
+            },
+            select: {
+                id: true,
+            }
+        })
+
+        return await db.sportsCenter.update({
+            where: { id: Number(queryData.sportsCenterId) },
+            data: {
+                sportFields: {
+                    connect: { id: Number(sportFieldId.id) }
+                }
+            }
+        })
+    }
+    catch (error) {
+        console.error("Error adding sport field to sports center:", error)
+        throw error
+    }
+}
+
+export const addSportFieldToSportsCenterAction = action(addSportFieldToSportsCenter, 'addSportFieldToSportsCenter')

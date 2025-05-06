@@ -1,14 +1,14 @@
 import { createSignal, Show } from "solid-js"
-import { useSubmission } from "@solidjs/router"
-import { useAuth } from "~/lib/auth"
+import { createAsync, useSubmission } from "@solidjs/router"
 import { addContactAction } from "~/lib/contacts"
+import { getUser } from "~/lib/users"
 
 type ContactSearchBarProps = {
     onContactAdded: () => void
 }
 
 export default function ContactSearchBar(props: ContactSearchBarProps) {
-  const { currentUser } = useAuth()
+  const user = createAsync(() => getUser())
   const [searchTerm, setSearchTerm] = createSignal("")
   const [searchResults, setSearchResults] = createSignal<any[]>([])
   const [isSearching, setIsSearching] = createSignal(false)
@@ -47,9 +47,9 @@ export default function ContactSearchBar(props: ContactSearchBarProps) {
         const data = await response.json()
 
         // Filter out the current user and existing contacts
-        setSearchResults(data.filter(user => 
-          user.id !== currentUser()?.id && 
-          !currentUser()?.contacts?.some(contact => contact.contactId === user.id)
+        setSearchResults(data.filter(currentUser => 
+          currentUser.id !== user()?.id && 
+          !user()?.contacts?.some(contact => contact.contactId === currentUser.id)
         ))
       } catch (err) {
         console.error("Search error:", err)
@@ -58,41 +58,6 @@ export default function ContactSearchBar(props: ContactSearchBarProps) {
         setIsSearching(false)
       }
     }, 300) as unknown as number
-  }
-
-  const handleAddContact = async (contactId: number) => {
-    try {
-      setError("")
-      if (!currentUser()?.id) {
-        setError("You must be logged in to add contacts")
-        return
-      }
-      
-      // Create a FormData object
-      const formData = new FormData()
-      formData.append("userId", currentUser().id.toString())
-      formData.append("contactId", contactId.toString())
-      
-      // Use fetch directly if the action is failing
-      const response = await fetch("/api/contacts/", {
-        method: "POST",
-        body: formData
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Failed to add contact: ${response.statusText}`)
-      }
-      
-      // Clear the search
-      setSearchTerm("")
-      setSearchResults([])
-      
-      // Notify parent component to refresh contacts list
-      props.onContactAdded()
-    } catch (err) {
-      console.error("Add contact error:", err)
-      setError("Failed to add contact")
-    }
   }
 
   return (
@@ -120,19 +85,23 @@ export default function ContactSearchBar(props: ContactSearchBarProps) {
       <Show when={searchResults().length > 0}>
         <div class="border rounded overflow-hidden">
           <ul class="divide-y divide-gray-200">
-            {searchResults().map(user => (
+            {searchResults().map(contact => (
               <li class="p-3 flex justify-between items-center hover:bg-gray-50">
                 <div>
-                  <p class="font-medium">{user.name}</p>
-                  <p class="text-sm text-gray-600">{user.email}</p>
+                  <p class="font-medium">{contact.name}</p>
+                  <p class="text-sm text-gray-600">{contact.email}</p>
                 </div>
-                <button
-                  onClick={() => handleAddContact(user.id)}
-                  disabled={addSubmission.pending}
-                  class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-                >
-                  {addSubmission.pending ? 'Adding...' : 'Add'}
-                </button>
+                <form method="post" action={addContactAction.toString()}>
+                  <input type="hidden" name="userId" value={user()?.id}/>
+                  <input type="hidden" name="contactId" value={contact.id}/>
+                  <button
+                    type="submit"
+                    disabled={addSubmission.pending}
+                    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    {addSubmission.pending ? 'Adding...' : 'Add'}
+                  </button>
+                </form>
               </li>
             ))}
           </ul>

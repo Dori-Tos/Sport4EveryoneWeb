@@ -1,8 +1,8 @@
 import { For, createSignal, Show } from "solid-js"
 import { ReservationSaveItem, SportFieldsItem } from "~/components/Items"
 import { addReservationAction } from "~/lib/reservations" 
-import { useAuth } from "~/lib/auth"
-import { useSubmission } from "@solidjs/router"
+import { createAsync, useSubmission } from "@solidjs/router"
+import { getUser } from "~/lib/users"
 
 type PopupProps = {
   data: Array<SportFieldsItem>
@@ -13,7 +13,7 @@ type PopupProps = {
 }
 
 export function PopupSportFields(props: PopupProps) {
-  const { currentUser, refreshUser } = useAuth()
+  const user = createAsync(() => getUser())
   const [selectedDate, setSelectedDate] = createSignal('2025-01-01')
   const [startTime, setStartTime] = createSignal('10:00')
   const [endTime, setEndTime] = createSignal('11:00')
@@ -41,7 +41,7 @@ export function PopupSportFields(props: PopupProps) {
 
   const isFormValid = () => {
     return (
-      currentUser()?.id !== undefined &&
+      user()?.id !== undefined &&
       props.centerId !== undefined &&
       selectedFieldId() !== null &&
       selectedDate() &&
@@ -63,7 +63,7 @@ export function PopupSportFields(props: PopupProps) {
         </div>
         
         <form method="post" action={addReservationAction}>
-          <input type="hidden" name="userID" value={currentUser()?.id} />
+          <input type="hidden" name="userID" value={user()?.id} />
           <input type="hidden" name="sportsCenterID" value={props.centerId} />
           <input type="hidden" name="startDateTime" value={`${selectedDate()}T${startTime()}:00Z`} />
           <input type="hidden" name="duration" value={calculateDuration()} />
