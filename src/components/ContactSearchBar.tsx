@@ -1,6 +1,6 @@
 import { createSignal, Show } from "solid-js"
 import { createAsync, useSubmission } from "@solidjs/router"
-import { addContactAction } from "~/lib/contacts"
+import { addContactAction, searchContacts } from "~/lib/contacts"
 import { getUser } from "~/lib/users"
 
 type ContactSearchBarProps = {
@@ -37,23 +37,29 @@ export default function ContactSearchBar(props: ContactSearchBarProps) {
     // Set new timeout for 300ms to reduce API calls while typing
     debounceTimeout = setTimeout(async () => {
       try {
-        // Use the contacts API endpoint instead of users/search
-        const response = await fetch(`/api/contacts?term=${encodeURIComponent(value)}`)
+        // Modify how you call searchContactsAction - pass params as an object
+        const data = await searchContacts(value.toString(), user()?.id);
 
-        if (!response.ok) {
-            throw new Error('Search failed')
+        // Check if data is defined and is an array
+        if (data && Array.isArray(data)) {
+          // Filter out the current user and existing contacts  
+          setSearchResults(data.filter(currentUser => 
+            currentUser?.id !== user()?.id && 
+            !user()?.contacts?.some(contact => contact.contactId === currentUser?.id)
+          ))
+        } else {
+          console.error("Invalid search results format:", data);
+          setSearchResults([]);
+          setError("Invalid response format from search");
         }
-
-        const data = await response.json()
-
-        // Filter out the current user and existing contacts
-        setSearchResults(data.filter(currentUser => 
-          currentUser.id !== user()?.id && 
-          !user()?.contacts?.some(contact => contact.contactId === currentUser.id)
-        ))
       } catch (err) {
-        console.error("Search error:", err)
-        setError("Failed to search users")
+        console.error("Search error details:", {
+          error: err,
+          errorType: typeof err,
+          errorMessage: err.message,
+          searchTerm: value
+        });
+        setError("Failed to search users");
       } finally {
         setIsSearching(false)
       }

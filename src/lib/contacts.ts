@@ -100,7 +100,8 @@ export const removeContact = async (formData: FormData) => {
     throw new Error("Invalid userId or contactId")
   }
   
-  return await db.contact.delete({
+  // Delete the contact relationship for both users
+  await db.contact.delete({
     where: {
       userId_contactId: {
         userId: userId,
@@ -108,6 +109,46 @@ export const removeContact = async (formData: FormData) => {
       }
     }
   })
+
+  return await db.contact.delete({
+    where: {
+      userId_contactId: {
+        userId: contactId,
+        contactId: userId
+      }
+    }
+  })
 }
 
 export const removeContactAction = action(removeContact, 'removeContact')
+
+export const searchContacts = async (query: string, userId: number) => {
+  'use server'
+
+  try {
+    if (!query) return []
+    if (!userId) return []
+
+    const contacts = await db.user.findMany({
+      where: {
+        id: {
+          not: userId,
+        },
+        OR: [
+          { name: { contains: query } },
+          { email: { contains: query } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    })
+
+    return contacts
+  } catch (error) {
+    console.error("Error searching contacts:", error)
+  }
+}
+export const searchContactsAction = action(searchContacts, 'searchContacts')

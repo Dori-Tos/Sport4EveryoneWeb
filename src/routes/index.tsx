@@ -1,4 +1,4 @@
-import { createAsync, createAsyncStore, type RouteDefinition, useNavigate } from "@solidjs/router"
+import { createAsync, createAsyncStore, type RouteDefinition } from "@solidjs/router"
 import { createSignal, createEffect } from "solid-js"
 import { MainCentered } from "~/components/Main"
 import { MainHeader, MediumHeader } from "~/components/Header"
@@ -22,14 +22,6 @@ export const route = {
 export default function Home() {
   const user = createAsync(() => getUser())
   const [selectedSport, setSelectedSport] = createSignal("football")
-  const navigate = useNavigate()
-
-  // createEffect(() => {
-  //   if (user() == undefined && user() == null) {
-  //     // Redirect unauthenticated users to login (which will show the login popup)
-  //     navigate('/login', { replace: true })
-  //   }
-  // })
 
   const sports = createAsyncStore(() => getSports(), { initialValue: [] })
 

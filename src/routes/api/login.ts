@@ -1,74 +1,75 @@
-import bcrypt from 'bcryptjs'
-import { db } from '~/lib/db'
 import { login } from '~/lib/auth/login'
-import { getSession } from '~/lib/auth/session'
-import { loginSchema } from '~/lib/users'
 import type { APIEvent } from '@solidjs/start/server'
+import { getSession } from '~/lib/auth/session'
 
 export async function POST(event: APIEvent) {
   try {
-    const formData = await event.request.formData()
-    const result = await login(formData)
-    return new Response(JSON.stringify(result), {
-      headers: { 
-        'Content-Type': 'application/json',
-        // Set secure cookie attributes
-        'Set-Cookie': 'HttpOnly; Secure; SameSite=Strict'
-       },
-      })
+    // Support both FormData and JSON request bodies
+    let loginData;
+    const contentType = event.request.headers.get('content-type') || '';
+    
+    const isMobile = contentType.includes('application/x-www-form-urlencoded');
+    
+    if (contentType.includes('application/json')) {
+      // Handle JSON requests
+      const jsonData = await event.request.json();
+      const formData = new FormData();
+      formData.append('email', jsonData.email);
+      formData.append('password', jsonData.password);
+      loginData = formData;
+    } else {
+      // Handle form data (both web and mobile form submissions)
+      try {
+        const formData = await event.request.formData();
+        loginData = formData;
+      } catch (e) {
+        console.error("Failed to parse form data:", e);
+        // If formData parsing fails, try to parse as URL encoded form
+        const text = await event.request.text();
+        console.log("Raw request body:", text);
+        
+        const params = new URLSearchParams(text);
+        loginData = new FormData();
+        for (const [key, value] of params.entries()) {
+          loginData.append(key, value);
+        }
+      }
+    }
+    
+    // Pass the isMobile flag to the login function
+    const result = await login(loginData, isMobile);
+    
+    // For mobile clients, include the mobile token in the response
+    if (isMobile) {
+      return new Response(JSON.stringify({
+        success: true,
+        userId: result.userId,
+        mobileToken: result.mobileToken 
+      }), {
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+      });
+    } else {
+      // For web clients, the session middleware handles cookies automatically
+      return new Response(JSON.stringify({
+        success: true,
+      }), {
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      });
+    }
   }
   catch (error: any) {
-    console.error('Login error:', error)
-    return new Response(JSON.stringify({ success: false, message: 'Authentication failed' }), {
+    console.error('Login error:', error);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      message: 'Authentication failed',
+      error: error.message 
+    }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
-    })
+    });
   }
 }
-
-// export async function POST(event: APIEvent) {
-//   try {
-//     const formData = await event.request.formData()
-//     const { email, password } = loginSchema.parse({
-//       email: formData.get('email'),
-//       password: formData.get('password'),
-//     })
-//     console.log('Login attempt:', { email, password }) // Add logging
-
-//     const user = await db.user.findUnique({ where: { email } })
-//     if (!user) {
-//       console.log('User not found:', email) // Add logging
-//       return new Response(JSON.stringify({ success: false, message: 'Invalid credentials' }), {
-//         headers: { 'Content-Type': 'application/json' },
-//         status: 401,
-//       })
-//     }
-
-//     const loggedIn = await bcrypt.compare(password, user.password)
-//     if (loggedIn) {
-//       const session = await getSession()
-//       await session.update({ email: user.email })
-//       console.log('Session updated for user:', email) // Add logging
-      
-//       // Don't return password in the response
-//       const { password: _, ...userWithoutPassword } = user
-      
-//       return new Response(JSON.stringify({ success: true, user: userWithoutPassword }), {
-//         headers: { 'Content-Type': 'application/json' },
-//         status: 200,
-//       })
-//     } else {
-//       console.log('Invalid password for user:', email) // Add logging
-//       return new Response(JSON.stringify({ success: false, message: 'Invalid credentials' }), {
-//         headers: { 'Content-Type': 'application/json' },
-//         status: 401,
-//       })
-//     }
-//   } catch (error: any) {
-//     console.error('Login error:', error)
-//     return new Response(JSON.stringify({ success: false, message: 'Authentication failed' }), {
-//       headers: { 'Content-Type': 'application/json' },
-//       status: 500,
-//     })
-//   }
-// }

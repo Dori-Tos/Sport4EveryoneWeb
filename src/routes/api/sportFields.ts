@@ -1,4 +1,5 @@
 import type { APIEvent } from '@solidjs/start/server'
+import { c } from 'vinxi/dist/types/lib/logger'
 import { addSportField, getSportFields, removeSportField } from '~/lib/sportFields'
 
 export async function GET(event: APIEvent) {
@@ -20,7 +21,13 @@ export async function GET(event: APIEvent) {
 
 export async function POST(event: APIEvent) {
   try {
-    const formData = await event.request.formData()
+    const body = await event.request.json()
+    const formData = new FormData()
+    formData.append('name', body.name)
+    formData.append('price', body.price)
+    body.sports.forEach((sport: string) => {
+      formData.append('sports', sport)
+    })
     const newSport = await addSportField(formData)
     return new Response(JSON.stringify(newSport), {
       headers: { 'Content-Type': 'application/json' }, status: 201 }
@@ -37,7 +44,8 @@ export async function POST(event: APIEvent) {
 }
 
 export async function DELETE(event: APIEvent) {
-  const id = Number(event.params.id)
+  const body = await event.request.json()
+  const id = Number(body.id)
   if (isNaN(id)) {
     return new Response(
       JSON.stringify({ message: `Invalid ID: ${event.params.id}` }),
@@ -45,7 +53,9 @@ export async function DELETE(event: APIEvent) {
     )
   }
   try {
-    await removeSportField(id)
+    const formData = new FormData()
+    formData.append('id', String(id))
+    await removeSportField(formData)
     return new Response(
       JSON.stringify({ message: "Sport field deleted" }),
       { headers: { 'Content-Type': 'application/json' }, status: 200 }

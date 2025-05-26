@@ -1,6 +1,7 @@
 import { query, action } from '@solidjs/router'
 import { db } from './db'
 import { z } from 'zod'
+import { c } from 'vinxi/dist/types/lib/logger'
 
 export const sportsCenterSchema = z.object({
     name: z.string(),
@@ -27,6 +28,23 @@ export const getSportsCenters = query(async () => {
         }
     })  
 }, 'getSportsCenters')
+
+export const getSportsCenter = query(async (id: number) => {
+    'use server'
+    try {
+        return await db.sportsCenter.findUnique({
+            where: { id },
+            include: {
+                sportFields: {
+                    select: { id: true },
+                },
+            }
+        })
+    } catch (error) {
+        console.error("Error fetching sports center:", error)
+        throw error
+    }
+}, 'getSportsCenter')
 
 export const getSportsCentersBySport = query(async (sportName: string) => {
     'use server'

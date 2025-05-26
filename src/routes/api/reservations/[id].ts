@@ -2,7 +2,9 @@ import type { APIEvent } from '@solidjs/start/server'
 import { removeReservation } from '~/lib/reservations'
 
 export async function DELETE(event: APIEvent) {
-    const id = Number(event.params.id)
+    const body = await event.request.json()
+    const id = Number(body.id)
+    
     if (isNaN(id)) {
         return new Response(
         JSON.stringify({ message: "Invalid ID" }),

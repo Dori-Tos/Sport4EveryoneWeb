@@ -12,6 +12,11 @@ export const getSports = query(async () => {
   return await db.sport.findMany()    // If the server made the request => we get localy from the database
 }, 'getSports')
 
+export const getSport = query(async (id: number) => {
+  'use server'
+  return await db.sport.findUnique({ where: { id } })
+}, 'getSport')
+
 export const addSport = async (form: FormData) => {    // Action synchronizes the data
     'use server'
     const sportData = sportSchema.parse({

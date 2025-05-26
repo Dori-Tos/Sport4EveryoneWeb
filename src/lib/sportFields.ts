@@ -19,15 +19,34 @@ export const getSportFields = query(async () => {
       })
 }, 'getSportFields')
 
-export const getSportFieldsBySportsCenter = query(async (sportsCenterId?: number) => {
+export const getSportFieldsBySportsCenter = query(async (sportsCenterId?: number, addId = false) => {
     'use server'
     if (sportsCenterId === undefined) return []
-    return await db.sportsField.findMany({
-        where: { sportsCenterId: sportsCenterId },
-        include: {
-            sports: true
+    else {
+        // Base query that's the same for both cases
+        const query = {
+            where: { sportsCenterId: sportsCenterId },
+            include: {
+                sports: true
+            }
         }
-    })
+        
+        if (addId) {
+            const { include, ...baseQuery } = query;
+            return await db.sportsField.findMany({
+                ...baseQuery,
+                select: {
+                    id: true,
+                    name: true,
+                    price: true,
+                    sports: true,
+                    sportsCenterId: true
+                }
+            })
+        } else {
+            return await db.sportsField.findMany(query)
+        }
+    }
 }, 'sportFieldsBySportsCenter' )
 
 export const addSportField = async (form: FormData) => {  
@@ -55,7 +74,7 @@ export const addSportFieldAction = action(addSportField, 'addSportField')
 export const removeSportField = async (formData: FormData) => {
     'use server'
     try {
-        const id = formData.get('id')?.toString()
+        const id = Number(formData.get('id'))
 
         return await db.sportsField.delete({ 
             where: { 
