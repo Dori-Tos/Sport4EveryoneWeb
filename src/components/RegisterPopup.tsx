@@ -69,6 +69,9 @@ export default function RegisterPopup({ onSwitchToLogin }: RegisterPopupProps) {
             />
           </div>
 
+          {/* Hidden field to set administrator to false for new registrations */}
+          <input type="hidden" name="administrator" value="false" />
+
           <button 
             type="submit" 
             class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"

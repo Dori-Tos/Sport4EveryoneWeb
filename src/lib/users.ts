@@ -95,14 +95,16 @@ export const getUser = query(async () => {
 
 export const addUser = async (formData: FormData) => {
   'use server'
-  const userData = usersSchema.parse({...Object.fromEntries(formData.entries()) })
+  // Use registerSchema which doesn't require id field
+  const userData = registerSchema.parse({...Object.fromEntries(formData.entries()) })
 
-  if (userData.password !== userData.confirmPassword) {
+  const confirmPassword = formData.get('confirmPassword')?.toString()
+  if (userData.password !== confirmPassword) {
     throw new Error("Passwords do not match")
   }
 
   // Hash the password before storing
-  const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10): ''
+  const hashedPassword = await bcrypt.hash(userData.password, 10)
 
   return await db.user.create({
     data: {
