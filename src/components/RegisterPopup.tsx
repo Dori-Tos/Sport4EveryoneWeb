@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js"
+import { createSignal, Show, createEffect } from "solid-js"
 import { useNavigate, useSubmission } from "@solidjs/router"
 import { addUserAction } from "~/lib/users"
 
@@ -9,6 +9,13 @@ interface RegisterPopupProps {
 export default function RegisterPopup({ onSwitchToLogin }: RegisterPopupProps) {
   const navigate = useNavigate()
   const submission = useSubmission(addUserAction)
+  
+  // Switch to login popup after successful registration
+  createEffect(() => {
+    if (submission.result && !submission.pending && !submission.error) {
+      onSwitchToLogin();
+    }
+  });
     
   return (
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

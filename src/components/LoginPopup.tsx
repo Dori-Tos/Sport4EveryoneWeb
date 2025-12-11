@@ -16,7 +16,7 @@ export default function LoginPopup({ onSwitchToSignUp } : LoginPopupProps ) {
         <form method="post" action={loginAction} class="space-y-4" autocomplete="on">
           <Show when={submission.error}>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {submission.error}
+              {submission.error.message || JSON.stringify(submission.error)}
             </div>
           </Show>
           

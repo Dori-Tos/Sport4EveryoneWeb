@@ -6,6 +6,9 @@
     "build": "vinxi build",
     "start": "vinxi start"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.5.0",
     "@solidjs/router": "0.15.3",

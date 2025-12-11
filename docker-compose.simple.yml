@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    ports:
+      - "3000:3000"
+    volumes:
+      - app-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/prod.db
+      - SESSION_SECRET=${SESSION_SECRET:-change_this_secret_min_32_characters}
+      - MOBILE_SECRET=${MOBILE_SECRET:-change_this_secret_min_32_characters}
+    restart: unless-stopped
+
+volumes:
+  app-data:

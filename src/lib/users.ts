@@ -28,7 +28,14 @@ export const registerSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string(),
-  administrator: z.coerce.boolean().default(false),
+  administrator: z.preprocess(
+    (val) => {
+      if (val === 'false' || val === false || val === '' || val === null || val === undefined) return false;
+      if (val === 'true' || val === true) return true;
+      return false;
+    },
+    z.boolean()
+  ),
 })
 
 export const getUsers = query(async () => {
